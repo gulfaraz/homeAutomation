@@ -77,19 +77,14 @@ define('main',['exports', './environment'], function (exports, _environment) {
       aurelia.use.plugin('aurelia-testing');
     }
 
+    aurelia.use.plugin('aurelia-materialize-bridge', function (b) {
+      return b.useAll();
+    });
+
     aurelia.start().then(function () {
       return aurelia.setRoot();
     });
   }
-});
-define('resources/index',["exports"], function (exports) {
-  "use strict";
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.configure = configure;
-  function configure(config) {}
 });
 define('home/home',["exports"], function (exports) {
     "use strict";
@@ -129,7 +124,16 @@ define('login/login',["exports"], function (exports) {
         this.title = "Login";
     };
 });
-define('text!app.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <router-view></router-view>\n</template>\n"; });
-define('text!home/home.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n</template>\n"; });
-define('text!login/login.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n</template>\n"; });
+define('resources/index',["exports"], function (exports) {
+  "use strict";
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.configure = configure;
+  function configure(config) {}
+});
+define('text!app.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <require from=\"materialize-css/css/materialize.css\"></require>\n    <router-view></router-view>\n</template>\n"; });
+define('text!home/home.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <a route-href=\"route: login\" title=\"Login\">Click here to LOGIN</a>\n</template>\n"; });
+define('text!login/login.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div class=\"row\">\n        <form class=\"col s12\" method=\"POST\" action=\"/login\">\n            <div class=\"row\">\n                <div class=\"input-field col s12 m12 l12\">\n                    <input name=\"userName\" id=\"userName\" type=\"text\" class=\"validate\">\n                    <label for=\"userName\">User Name</label>\n                </div>\n            </div>\n            <div class=\"row\">\n                <div class=\"input-field col s12 m12 l12\">\n                    <input name=\"password\" id=\"password\" type=\"password\" class=\"validate\">\n                    <label for=\"password\">Password</label>\n                </div>\n            </div>\n            <div class=\"row\">\n                <button class=\"waves-effect waves-light btn\" type=\"submit\">Login</button>\n            </div>\n        </form>\n    </div>\n</template>\n"; });
 //# sourceMappingURL=app-bundle.js.map
