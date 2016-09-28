@@ -28,6 +28,10 @@ gulp.task("default", function () {
     var models = require("./models")();
     var auth = require("./auth")(models.User, configuration);
     app.use(auth.passport.initialize());
-    app.use(require("./routes/routes")(express, auth));
+    var modules = {
+        "User" : require("./user")(models.Home),
+        "Home" : require("./home")(models.Home)
+    };
+    app.use(require("./routes/routes")(express, auth, modules));
     app.listen(8080);
 }());

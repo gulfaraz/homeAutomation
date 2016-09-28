@@ -128,7 +128,6 @@ module.exports = function (User, configuration) {
         }));
 
     return {
-        "jwt" : jwt,
         "passport" : passport
     }
 

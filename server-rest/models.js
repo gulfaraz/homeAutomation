@@ -9,7 +9,7 @@ module.exports = function () {
         "password" : { "type" : String },
         "mail" : { "type" : String, "lowercase" : true },
         "status" : String,
-        "created" : Date,
+        "created" : { type: Date, default: Date.now },
         "edited" : Date
     });
 
@@ -41,8 +41,18 @@ module.exports = function () {
         });
     };
 
+    var HomeSchema = new Schema({
+        "name" : { "type" : String },
+        "residents" : [ { "type" : String } ],
+        "address" : { "type" : String },
+        "status" : { type: Boolean, default: true },
+        "created" : { type: Date, default: Date.now },
+        "edited" : { type: Date, default: Date.now }
+    });
+
     return {
-        "User" : mongoose.model("User", UserSchema)
+        "User" : mongoose.model("User", UserSchema),
+        "Home" : mongoose.model("Home", HomeSchema)
     };
 
 };
