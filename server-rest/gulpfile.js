@@ -7,6 +7,8 @@ gulp.task("default", function () {
     var bodyParser = require("body-parser");
     app.use(bodyParser.urlencoded({ "extended" : true }));
     app.use(bodyParser.json());
+    var cors = require("cors");
+    app.use(cors());
     var mongoose = require("mongoose");
     var dbURI = configuration.database.scheme + "://" + configuration.database.domain + "/" + configuration.database.dbname;
     mongoose.connect(dbURI);
