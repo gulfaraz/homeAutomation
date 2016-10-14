@@ -69,7 +69,7 @@
             ".html",
             ".css"
           ],
-          "stub": false 
+          "stub": true
         }
       ]
     },
@@ -113,6 +113,10 @@
           "aurelia-task-queue",
           "aurelia-templating",
           "aurelia-templating-binding",
+          "aurelia-auth",
+          "aurelia-http-client",
+          "jquery",
+          "bootstrap",
           {
             "name": "text",
             "path": "../scripts/text"
@@ -134,70 +138,29 @@
             "env": "dev"
           },
           {
-            "name": "jquery",
-            "path": "../node_modules/jquery/dist",
-            "main": "jquery.min"
-          },
-          {
-            "name": "materialize-css",
-            "path": "../node_modules/materialize-css/dist",
-            "main": "js/materialize.amd",
-            "deps": [
-              "jquery"
-            ],
-            "exports": "Materialize",
+            "name": "bootstrap",
+            "path": "../node_modules/bootstrap/dist",
+            "main": "js/bootstrap.min",
+            "deps": ["jquery"],
+            "exports": "$",
             "resources": [
-              "css/materialize.css"
+              "css/bootstrap.css"
             ]
           },
           {
-            "name": "aurelia-materialize-bridge",
-            "path": "../node_modules/aurelia-materialize-bridge/dist/amd",
-            "main": "index",
-            "deps": [
-              "jquery"
-            ],
-            "resources": [
-              "breadcrumbs/breadcrumbs.css",
-              "breadcrumbs/breadcrumbs.html",
-              "card/card.css",
-              "card/card.html",
-              "carousel/carousel-item.html",
-              "carousel/carousel.css",
-              "carousel/carousel.html",
-              "checkbox/checkbox.html",
-              "chip/chip.html",
-              "collection/collection-header.css",
-              "collection/collection-header.html",
-              "collection/collection-item.css",
-              "collection/collection-item.html",
-              "collection/collection.html",
-              "collection/md-collection-selector.css",
-              "collection/md-collection-selector.html",
-              "colors/md-colors.html",
-              "dropdown/dropdown-element.html",
-              "fab/fab.html",
-              "file/file.html",
-              "input/input.css",
-              "input/input.html",
-              "navbar/navbar.css",
-              "navbar/navbar.html",
-              "pagination/pagination.html",
-              "progress/progress.html",
-              "radio/radio.html",
-              "range/range.html",
-              "sidenav/sidenav.css",
-              "sidenav/sidenav.html",
-              "slider/slider.css",
-              "switch/switch.css",
-              "switch/switch.html",
-              "well/md-well.html"
-            ]
+            "name": "aurelia-auth",
+            "path": "../node_modules/aurelia-auth/dist/amd",
+            "main": "aurelia-auth"
           },
           {
-            "name": "aurelia-validation",
-            "path": "../node_modules/aurelia-validation/dist/amd",
-            "main": "aurelia-validation"
+            "name": "aurelia-fetch-client",
+            "path": "../node_modules/aurelia-fetch-client/dist/amd",
+            "main": "aurelia-fetch-client"
+          },
+          {
+            "name": "aurelia-http-client",
+            "path": "../node_modules/aurelia-http-client/dist/amd",
+            "main": "aurelia-http-client"
           }
         ]
       }
