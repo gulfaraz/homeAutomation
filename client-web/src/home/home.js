@@ -1,5 +1,5 @@
 export class Home {
     constructor() {
-        this.title = "Welcome";
+        this.title = "Choose your home";
     }
 }

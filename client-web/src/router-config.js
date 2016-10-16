@@ -2,41 +2,49 @@ import {AuthorizeStep} from 'aurelia-auth';
 import {inject} from 'aurelia-framework';
 import {Router} from 'aurelia-router';
 
-// Using Aurelia's dependency injection, we inject Router
-// with the @inject decorator
 @inject(Router)
 
 export default class {
 
-  constructor(router) {
-    this.router = router;
-  };
+    constructor(router) {
+        this.router = router;
+    };
 
-  configure() {
+    configure() {
 
-    var appRouterConfig = function(config) {
+        var appRouterConfig = function(config) {
+            config.title = 'Home Automation';
+            config.addPipelineStep('authorize', AuthorizeStep);
+            config.map([
+                {
+                    route: ['','home'],
+                    name: 'home',
+                    moduleId: 'home/home',
+                    title:'Home',
+                    auth: true
+                },
+                {
+                    route: 'home/new',
+                    name: 'newHome',
+                    moduleId: 'home/newHome',
+                    title:'Login',
+                    auth: true
+                },
+                {
+                    route: 'login',
+                    name: 'login',
+                    moduleId: 'login/login',
+                    title:'Login'
+                },
+                {
+                    route: 'logout',
+                    name: 'logout',
+                    moduleId: 'logout/logout',
+                    title:'Logout'
+                }
+            ]);
+        };
 
-      config.title = 'Random Quotes App';
-
-      // Here we hook into the authorize extensibility point
-      // to add a route filter so that we can require authentication
-      // on certain routes
-      config.addPipelineStep('authorize', AuthorizeStep);
-
-      // Here we describe the routes we want along with information about them
-      // such as which they are accessible at, which module they use, and whether
-      // they should be placed in the navigation bar
-      config.map([
-          { route: ['','welcome'], name: 'welcome', moduleId: 'welcome/welcome', nav: true, title:'Welcome' },
-          // The secret-quote route is the only one that the user needs to be logged in to see,  so we set auth: true
-          { route: 'signup', name: 'signup', moduleId: 'signup/signup', nav: false, title:'Signup', authRoute: true },
-          { route: 'login', name: 'login', moduleId: 'login/login', nav: false, title:'Login', authRoute: true },
-          { route: 'logout', name: 'logout', moduleId: 'logout/logout', nav: false, title:'Logout', authRoute: true }
-        ]);
-      };
-
-    // The router is configured with what we specify in the appRouterConfig
-    this.router.configure(appRouterConfig);
-
-  };
+        this.router.configure(appRouterConfig);
+    };
 }

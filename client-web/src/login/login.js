@@ -16,11 +16,11 @@ export class Login {
 
     login() {
         return this.auth.login({ userName: this.userName, password: this.password })
-        .then(response => {
-            console.log("Login response: " + response);
-        })
-        .catch(error => {
-            this.error = error.response;
-        });
+            .then(response => {
+                console.log("Login response: " + response);
+            })
+            .catch(error => {
+                this.error = error.statusText;
+            });
     };
 }
