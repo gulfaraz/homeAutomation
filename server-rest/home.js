@@ -1,7 +1,17 @@
 module.exports = function (Home) {
 
-    function getHome(userId, callback) {
+    function getUserHomes(userId, callback) {
         Home.find({ residents: userId }).exec(function (err, home) {
+            if(err) {
+                callback(err);
+            } else {
+                callback(null, home);
+            }
+        });
+    };
+
+    function getHome(homeId, callback) {
+        Home.findById(homeId).exec(function (err, home) {
             if(err) {
                 callback(err);
             } else {
@@ -25,6 +35,7 @@ module.exports = function (Home) {
     };
 
     return {
+        getUserHomes: getUserHomes,
         getHome: getHome,
         addHome: addHome
     };

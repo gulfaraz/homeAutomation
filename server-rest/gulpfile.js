@@ -58,7 +58,7 @@ gulp.task("default", function () {
     app.use(auth.passport.initialize());
 
     var modules = {
-        "User" : require("./user")(models.Home),
+        "User" : require("./user")(),
         "Home" : require("./home")(models.Home)
     };
     app.use(require("./routes/routes")(express, auth, modules));
