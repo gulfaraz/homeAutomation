@@ -5,9 +5,9 @@ module.exports = function () {
     var Schema = mongoose.Schema;
 
     var UserSchema = new Schema({
-        "userName" : { "type" : String },
-        "password" : { "type" : String },
-        "mail" : { "type" : String, "lowercase" : true },
+        "userName" : { "type" : String, required : true },
+        "password" : { "type" : String, required : true },
+        "mail" : { "type" : String, "lowercase" : true, required : true },
         "status" : String,
         "created" : { type: Date, default: Date.now },
         "edited" : Date
@@ -42,7 +42,7 @@ module.exports = function () {
     };
 
     var HomeSchema = new Schema({
-        "name" : { "type" : String },
+        "name" : { "type" : String, required : true },
         "residents" : [ { "type" : String } ],
         "address" : { "type" : String },
         "status" : { type: Boolean, default: true },
