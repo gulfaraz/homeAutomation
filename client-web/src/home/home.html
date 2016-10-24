@@ -1,4 +1,8 @@
 <template>
     <h1>${title}</h1>
+    <div repeat.for="home of homes">
+        <a route-href="route: viewHome; params.bind: { homeId: home._id }" title="View Home">${home.name}</a>
+    </div>
+    <hr>
     <a route-href="route: newHome" title="Add A Home">Add HOME</a>
 </template>

@@ -1,4 +1,22 @@
 <template>
     <h1>${title}</h1>
+    <form role="form" submit.delegate="add()">
+        <div>
+            <div>
+                <label for="homeName">Home Name</label>
+                <input name="homeName" id="homeName" type="text" value.bind="homeName">
+            </div>
+        </div>
+        <div>
+            <div>
+                <label for="address">Address</label>
+                <input name="address" id="address" type="text" value.bind="address">
+            </div>
+        </div>
+        <div>
+            <button type="submit">Add</button>
+        </div>
+    </form>
+    <hr>
     <a route-href="route: home" title="Cancel">Back</a>
 </template>

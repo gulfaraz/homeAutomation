@@ -65,46 +65,76 @@ define('environment',["exports"], function (exports) {
     testing: true
   };
 });
-define('login',['exports', 'aurelia-auth', 'aurelia-framework'], function (exports, _aureliaAuth, _aureliaFramework) {
-  'use strict';
+define('http',['exports', 'aurelia-fetch-client', 'aurelia-framework', 'aurelia-auth', './auth-config'], function (exports, _aureliaFetchClient, _aureliaFramework, _aureliaAuth, _authConfig) {
+    'use strict';
 
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.Login = undefined;
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    exports.CustomHttpClient = undefined;
 
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
+    var _authConfig2 = _interopRequireDefault(_authConfig);
 
-  var _dec, _class;
-
-  var Login = exports.Login = (_dec = (0, _aureliaFramework.inject)(_aureliaAuth.AuthService), _dec(_class = function () {
-    function Login(auth) {
-      _classCallCheck(this, Login);
-
-      this.heading = 'Login';
-      this.email = '';
-      this.password = '';
-      this.loginError = '';
-
-      this.auth = auth;
+    function _interopRequireDefault(obj) {
+        return obj && obj.__esModule ? obj : {
+            default: obj
+        };
     }
 
-    Login.prototype.login = function login() {
-      var _this = this;
+    function _classCallCheck(instance, Constructor) {
+        if (!(instance instanceof Constructor)) {
+            throw new TypeError("Cannot call a class as a function");
+        }
+    }
 
-      return this.auth.login({ userName: this.userName, password: this.password }).then(function (response) {
-        console.log("Login response: " + response);
-      }).catch(function (error) {
-        _this.loginError = error.response;
-      });
-    };
+    function _possibleConstructorReturn(self, call) {
+        if (!self) {
+            throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+        }
 
-    return Login;
-  }()) || _class);
+        return call && (typeof call === "object" || typeof call === "function") ? call : self;
+    }
+
+    function _inherits(subClass, superClass) {
+        if (typeof superClass !== "function" && superClass !== null) {
+            throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+        }
+
+        subClass.prototype = Object.create(superClass && superClass.prototype, {
+            constructor: {
+                value: subClass,
+                enumerable: false,
+                writable: true,
+                configurable: true
+            }
+        });
+        if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+    }
+
+    var _dec, _class;
+
+    var CustomHttpClient = exports.CustomHttpClient = (_dec = (0, _aureliaFramework.inject)(_aureliaAuth.AuthService), _dec(_class = function (_HttpClient) {
+        _inherits(CustomHttpClient, _HttpClient);
+
+        function CustomHttpClient(auth) {
+            _classCallCheck(this, CustomHttpClient);
+
+            var _this = _possibleConstructorReturn(this, _HttpClient.call(this));
+
+            _this.configure(function (config) {
+                config.withBaseUrl(_authConfig2.default.baseUrl).withDefaults({
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'Fetch'
+                    }
+                }).withInterceptor(auth.tokenInterceptor);
+            });
+            return _this;
+        }
+
+        return CustomHttpClient;
+    }(_aureliaFetchClient.HttpClient)) || _class);
 });
 define('main',['exports', './environment', './auth-config'], function (exports, _environment, _authConfig) {
   'use strict';
@@ -189,6 +219,12 @@ define('router-config',['exports', 'aurelia-auth', 'aurelia-framework', 'aurelia
                     title: 'Login',
                     auth: true
                 }, {
+                    route: 'home/:homeId',
+                    name: 'viewHome',
+                    moduleId: 'home/viewHome',
+                    title: 'View Home',
+                    auth: true
+                }, {
                     route: 'login',
                     name: 'login',
                     moduleId: 'login/login',
@@ -209,12 +245,13 @@ define('router-config',['exports', 'aurelia-auth', 'aurelia-framework', 'aurelia
 
     exports.default = _default;
 });
-define('home/home',["exports"], function (exports) {
-    "use strict";
+define('home/home',['exports', 'aurelia-framework', '../http'], function (exports, _aureliaFramework, _http) {
+    'use strict';
 
     Object.defineProperty(exports, "__esModule", {
         value: true
     });
+    exports.Home = undefined;
 
     function _classCallCheck(instance, Constructor) {
         if (!(instance instanceof Constructor)) {
@@ -222,11 +259,113 @@ define('home/home',["exports"], function (exports) {
         }
     }
 
-    var Home = exports.Home = function Home() {
-        _classCallCheck(this, Home);
+    var _dec, _class;
 
-        this.title = "Choose your home";
-    };
+    var Home = exports.Home = (_dec = (0, _aureliaFramework.inject)(_http.CustomHttpClient), _dec(_class = function () {
+        function Home(http) {
+            _classCallCheck(this, Home);
+
+            this.title = "Choose your home";
+
+            this.http = http;
+        }
+
+        Home.prototype.activate = function activate() {
+            var _this = this;
+
+            this.http.fetch("/home").then(function (response) {
+                return response.json();
+            }).then(function (data) {
+                _this.homes = data.home;
+            });
+        };
+
+        return Home;
+    }()) || _class);
+});
+define('home/newHome',['exports', 'aurelia-framework', 'aurelia-router', '../http'], function (exports, _aureliaFramework, _aureliaRouter, _http) {
+    'use strict';
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    exports.newHome = undefined;
+
+    function _classCallCheck(instance, Constructor) {
+        if (!(instance instanceof Constructor)) {
+            throw new TypeError("Cannot call a class as a function");
+        }
+    }
+
+    var _dec, _class;
+
+    var newHome = exports.newHome = (_dec = (0, _aureliaFramework.inject)(_http.CustomHttpClient, _aureliaRouter.Router), _dec(_class = function () {
+        function newHome(http, router) {
+            _classCallCheck(this, newHome);
+
+            this.title = "Add new home";
+            this.homeName = "";
+            this.address = "";
+
+            this.http = http;
+            this.router = router;
+        }
+
+        newHome.prototype.add = function add() {
+            var _this = this;
+
+            this.http.fetch("/home/new", {
+                method: "POST",
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ "name": this.homeName, "address": this.address })
+            }).then(function (response) {
+                return response.json();
+            }).then(function (data) {
+                _this.router.navigateToRoute("viewHome", { homeId: data.home._id });
+            });
+        };
+
+        return newHome;
+    }()) || _class);
+});
+define('home/viewHome',['exports', 'aurelia-framework', '../http'], function (exports, _aureliaFramework, _http) {
+    'use strict';
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    exports.viewHome = undefined;
+
+    function _classCallCheck(instance, Constructor) {
+        if (!(instance instanceof Constructor)) {
+            throw new TypeError("Cannot call a class as a function");
+        }
+    }
+
+    var _dec, _class;
+
+    var viewHome = exports.viewHome = (_dec = (0, _aureliaFramework.inject)(_http.CustomHttpClient), _dec(_class = function () {
+        function viewHome(http) {
+            _classCallCheck(this, viewHome);
+
+            this.http = http;
+        }
+
+        viewHome.prototype.activate = function activate(params) {
+            var _this = this;
+
+            this.http.fetch("/home/" + params.homeId).then(function (response) {
+                return response.json();
+            }).then(function (data) {
+                _this.home = data.home;
+            });
+        };
+
+        return viewHome;
+    }()) || _class);
 });
 define('login/login',['exports', 'aurelia-auth', 'aurelia-framework'], function (exports, _aureliaAuth, _aureliaFramework) {
     'use strict';
@@ -414,69 +553,6 @@ define('resources/index',["exports"], function (exports) {
   });
   exports.configure = configure;
   function configure(config) {}
-});
-define('signup/signup',['exports', 'aurelia-framework', 'aurelia-auth'], function (exports, _aureliaFramework, _aureliaAuth) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-  exports.Signup = undefined;
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var _dec, _class;
-
-  var Signup = exports.Signup = (_dec = (0, _aureliaFramework.inject)(_aureliaAuth.AuthService), _dec(_class = function () {
-    function Signup(auth) {
-      _classCallCheck(this, Signup);
-
-      this.heading = 'Sign Up';
-      this.email = '';
-      this.password = '';
-      this.signupError = '';
-
-      this.auth = auth;
-    }
-
-    Signup.prototype.signup = function signup() {
-      var _this = this;
-
-      var userInfo = { email: this.email, password: this.password };
-
-      return this.auth.signup(userInfo).then(function (response) {
-        console.log("Signed Up!");
-      }).catch(function (error) {
-        _this.signupError = error.response;
-      });
-    };
-
-    return Signup;
-  }()) || _class);
-});
-define('welcome/welcome',['exports'], function (exports) {
-  'use strict';
-
-  Object.defineProperty(exports, "__esModule", {
-    value: true
-  });
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  var Welcome = exports.Welcome = function Welcome() {
-    _classCallCheck(this, Welcome);
-
-    this.heading = 'Welcome to the Random Quotes App!';
-    this.info = 'You can get a random quote without logging in, but if you do log in you can get a super secret quote!';
-  };
 });
 define('aurelia-auth/auth-service',['exports', 'aurelia-dependency-injection', 'aurelia-fetch-client', 'aurelia-event-aggregator', './authentication', './base-config', './oAuth1', './oAuth2', './auth-utilities'], function (exports, _aureliaDependencyInjection, _aureliaFetchClient, _aureliaEventAggregator, _authentication, _baseConfig, _oAuth, _oAuth2, _authUtilities) {
   'use strict';
@@ -1796,72 +1872,11 @@ define('aurelia-auth/auth-filter',["exports"], function (exports) {
     return AuthFilterValueConverter;
   }();
 });
-define('home/home copy',["exports"], function (exports) {
-    "use strict";
-
-    Object.defineProperty(exports, "__esModule", {
-        value: true
-    });
-
-    function _classCallCheck(instance, Constructor) {
-        if (!(instance instanceof Constructor)) {
-            throw new TypeError("Cannot call a class as a function");
-        }
-    }
-
-    var Home = exports.Home = function Home() {
-        _classCallCheck(this, Home);
-
-        this.title = "Choose your home";
-    };
-});
-define('home/new',["exports"], function (exports) {
-    "use strict";
-
-    Object.defineProperty(exports, "__esModule", {
-        value: true
-    });
-
-    function _classCallCheck(instance, Constructor) {
-        if (!(instance instanceof Constructor)) {
-            throw new TypeError("Cannot call a class as a function");
-        }
-    }
-
-    var newHome = exports.newHome = function newHome() {
-        _classCallCheck(this, newHome);
-
-        this.title = "Choose your home";
-    };
-});
-define('home/newHome',["exports"], function (exports) {
-    "use strict";
-
-    Object.defineProperty(exports, "__esModule", {
-        value: true
-    });
-
-    function _classCallCheck(instance, Constructor) {
-        if (!(instance instanceof Constructor)) {
-            throw new TypeError("Cannot call a class as a function");
-        }
-    }
-
-    var newHome = exports.newHome = function newHome() {
-        _classCallCheck(this, newHome);
-
-        this.title = "Add new home";
-    };
-});
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\n    <require from='nav-bar/nav-bar'></require>\n    <nav-bar router.bind=\"router\"></nav-bar>\n    <div class=\"container\">\n        <router-view></router-view>\n    </div>\n</template>\n"; });
-define('text!login.html', ['module'], function(module) { module.exports = "<template>\n  <section>\n    <h2>${heading}</h2>\n\n    <form role=\"form\" submit.delegate=\"login()\">\n      <div class=\"form-group\">\n        <label for=\"userName\">User Name</label>\n        <input type=\"text\" value.bind=\"userName\" class=\"form-control\" id=\"userName\" placeholder=\"userName\">\n      </div>\n      <div class=\"form-group\">\n        <label for=\"password\">Password</label>\n        <input type=\"password\" value.bind=\"password\" class=\"form-control\" id=\"password\" placeholder=\"Password\">\n      </div>\n      <button type=\"submit\" class=\"btn btn-default\">Login</button>\n    </form>\n\n    <hr>\n    <div class=\"alert alert-danger\" if.bind=\"loginError\">${loginError}</div>\n  </section>\n</template>"; });
-define('text!home/home.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <a route-href=\"route: newHome\" title=\"Add A Home\">Add HOME</a>\n</template>\n"; });
+define('text!home/home.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div repeat.for=\"home of homes\">\n        <a route-href=\"route: viewHome; params.bind: { homeId: home._id }\" title=\"View Home\">${home.name}</a>\n    </div>\n    <hr>\n    <a route-href=\"route: newHome\" title=\"Add A Home\">Add HOME</a>\n</template>\n"; });
+define('text!home/newHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <form role=\"form\" submit.delegate=\"add()\">\n        <div>\n            <div>\n                <label for=\"homeName\">Home Name</label>\n                <input name=\"homeName\" id=\"homeName\" type=\"text\" value.bind=\"homeName\">\n            </div>\n        </div>\n        <div>\n            <div>\n                <label for=\"address\">Address</label>\n                <input name=\"address\" id=\"address\" type=\"text\" value.bind=\"address\">\n            </div>\n        </div>\n        <div>\n            <button type=\"submit\">Add</button>\n        </div>\n    </form>\n    <hr>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
+define('text!home/viewHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${home.name}</h1>\n    <div>${home.address}</div>\n    <hr>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
 define('text!login/login.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div>\n        <form role=\"form\" submit.delegate=\"login()\">\n            <div>\n                <div>\n                    <label for=\"userName\">User Name</label>\n                    <input name=\"userName\" id=\"userName\" type=\"text\" value.bind=\"userName\">\n                </div>\n            </div>\n            <div>\n                <div>\n                    <label for=\"password\">Password</label>\n                    <input name=\"password\" id=\"password\" type=\"password\" value.bind=\"password\">\n                </div>\n            </div>\n            <div>\n                <button type=\"submit\">Login</button>\n            </div>\n        </form>\n        <div class=\"alert alert-danger\" if.bind=\"error\">${error}</div>\n    </div>\n</template>\n"; });
 define('text!logout/logout.html', ['module'], function(module) { module.exports = "<!-- Aurelia expects a template for each route.\nWe don't actuall need a template for logging out, \nbut we provide an empty one to not get any errors -->\n<template></template>"; });
 define('text!nav-bar/nav-bar.html', ['module'], function(module) { module.exports = "<template>\n    <ul if.bind=\"!isAuthenticated\" class=\"nav navbar-nav navbar-right\">\n        <li><a route-href=\"route: login\">Login</a></li>\n    </ul>\n    <ul if.bind=\"isAuthenticated\" class=\"nav navbar-nav navbar-right\">\n        <li><a route-href=\"route: logout\">Logout</a></li>\n    </ul>\n</template>\n"; });
-define('text!signup/signup.html', ['module'], function(module) { module.exports = "  <template>\n  <form role=\"form\" submit.delegate=\"signup()\">\n    <div class=\"form-group\">\n      <label for=\"email\">Email</label>\n      <input type=\"text\" value.bind=\"email\" class=\"form-control\" id=\"email\" placeholder=\"Email\">\n    </div>\n    <div class=\"form-group\">\n      <label for=\"password\">Password</label>\n      <input type=\"password\" value.bind=\"password\" class=\"form-control\" id=\"password\" placeholder=\"Password\">\n    </div>\n    <button type=\"submit\" class=\"btn btn-default\">Signup</button>\n  </form>\n  <hr>\n  <div class=\"alert alert-danger\" if.bind=\"signupError\">${signupError}</div>\n  </template>"; });
-define('text!welcome/welcome.html', ['module'], function(module) { module.exports = " <template>\n  <section class=\"au-animate\">\n    <h2>${heading}</h2>\n\n    <div class=\"well\">\n      <h4>${info}</h4>\n    </div>\n\n  </section>\n </template>"; });
-define('text!home/home copy.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <a route-href=\"route: newHome\" title=\"Add A Home\">Add HOME</a>\n</template>\n"; });
-define('text!home/new.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
-define('text!home/newHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
 //# sourceMappingURL=app-bundle.js.map

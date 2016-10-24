@@ -31,6 +31,13 @@ export default class {
                     auth: true
                 },
                 {
+                    route: 'home/:homeId',
+                    name: 'viewHome',
+                    moduleId: 'home/viewHome',
+                    title:'View Home',
+                    auth: true
+                },
+                {
                     route: 'login',
                     name: 'login',
                     moduleId: 'login/login',
