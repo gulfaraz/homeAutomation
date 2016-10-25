@@ -46,5 +46,19 @@ module.exports = function (router, auth, Home) {
         }
     });
 
+    router.delete("/:homeId", auth.passport.authenticate("bearer", { "session" : false }), function (req, res) {
+        if(req.user) {
+            Home.removeHome(req.params.homeId, function (err, home) {
+                if(err || !home) {
+                    res.error(err && err.toString());
+                } else {
+                    res.ok("Home " + req.params.homeId + " Deleted");
+                }
+            });
+        } else {
+            res.forbidden("Invalid Token");
+        }
+    });
+
     return router;
 };

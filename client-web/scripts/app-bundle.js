@@ -331,7 +331,7 @@ define('home/newHome',['exports', 'aurelia-framework', 'aurelia-router', '../htt
         return newHome;
     }()) || _class);
 });
-define('home/viewHome',['exports', 'aurelia-framework', '../http'], function (exports, _aureliaFramework, _http) {
+define('home/viewHome',['exports', 'aurelia-framework', 'aurelia-router', '../http'], function (exports, _aureliaFramework, _aureliaRouter, _http) {
     'use strict';
 
     Object.defineProperty(exports, "__esModule", {
@@ -347,11 +347,12 @@ define('home/viewHome',['exports', 'aurelia-framework', '../http'], function (ex
 
     var _dec, _class;
 
-    var viewHome = exports.viewHome = (_dec = (0, _aureliaFramework.inject)(_http.CustomHttpClient), _dec(_class = function () {
-        function viewHome(http) {
+    var viewHome = exports.viewHome = (_dec = (0, _aureliaFramework.inject)(_http.CustomHttpClient, _aureliaRouter.Router), _dec(_class = function () {
+        function viewHome(http, router) {
             _classCallCheck(this, viewHome);
 
             this.http = http;
+            this.router = router;
         }
 
         viewHome.prototype.activate = function activate(params) {
@@ -361,6 +362,19 @@ define('home/viewHome',['exports', 'aurelia-framework', '../http'], function (ex
                 return response.json();
             }).then(function (data) {
                 _this.home = data.home;
+            });
+        };
+
+        viewHome.prototype.removeHome = function removeHome() {
+            var _this2 = this;
+
+            this.http.fetch("/home/" + this.home._id, {
+                method: "DELETE"
+            }).then(function (response) {
+                return response.json();
+            }).then(function (data) {
+                console.log(data);
+                _this2.router.navigateToRoute("home");
             });
         };
 
@@ -1875,7 +1889,7 @@ define('aurelia-auth/auth-filter',["exports"], function (exports) {
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\n    <require from='nav-bar/nav-bar'></require>\n    <nav-bar router.bind=\"router\"></nav-bar>\n    <div class=\"container\">\n        <router-view></router-view>\n    </div>\n</template>\n"; });
 define('text!home/home.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div repeat.for=\"home of homes\">\n        <a route-href=\"route: viewHome; params.bind: { homeId: home._id }\" title=\"View Home\">${home.name}</a>\n    </div>\n    <hr>\n    <a route-href=\"route: newHome\" title=\"Add A Home\">Add HOME</a>\n</template>\n"; });
 define('text!home/newHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <form role=\"form\" submit.delegate=\"add()\">\n        <div>\n            <div>\n                <label for=\"homeName\">Home Name</label>\n                <input name=\"homeName\" id=\"homeName\" type=\"text\" value.bind=\"homeName\">\n            </div>\n        </div>\n        <div>\n            <div>\n                <label for=\"address\">Address</label>\n                <input name=\"address\" id=\"address\" type=\"text\" value.bind=\"address\">\n            </div>\n        </div>\n        <div>\n            <button type=\"submit\">Add</button>\n        </div>\n    </form>\n    <hr>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
-define('text!home/viewHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${home.name}</h1>\n    <div>${home.address}</div>\n    <hr>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
+define('text!home/viewHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${home.name}</h1>\n    <div>${home.address}</div>\n    <button type=\"button\" click.delegate=\"removeHome()\">DELETE</button>\n    <hr>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
 define('text!login/login.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div>\n        <form role=\"form\" submit.delegate=\"login()\">\n            <div>\n                <div>\n                    <label for=\"userName\">User Name</label>\n                    <input name=\"userName\" id=\"userName\" type=\"text\" value.bind=\"userName\">\n                </div>\n            </div>\n            <div>\n                <div>\n                    <label for=\"password\">Password</label>\n                    <input name=\"password\" id=\"password\" type=\"password\" value.bind=\"password\">\n                </div>\n            </div>\n            <div>\n                <button type=\"submit\">Login</button>\n            </div>\n        </form>\n        <div class=\"alert alert-danger\" if.bind=\"error\">${error}</div>\n    </div>\n</template>\n"; });
 define('text!logout/logout.html', ['module'], function(module) { module.exports = "<!-- Aurelia expects a template for each route.\nWe don't actuall need a template for logging out, \nbut we provide an empty one to not get any errors -->\n<template></template>"; });
 define('text!nav-bar/nav-bar.html', ['module'], function(module) { module.exports = "<template>\n    <ul if.bind=\"!isAuthenticated\" class=\"nav navbar-nav navbar-right\">\n        <li><a route-href=\"route: login\">Login</a></li>\n    </ul>\n    <ul if.bind=\"isAuthenticated\" class=\"nav navbar-nav navbar-right\">\n        <li><a route-href=\"route: logout\">Logout</a></li>\n    </ul>\n</template>\n"; });

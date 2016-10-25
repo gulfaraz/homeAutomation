@@ -45,6 +45,7 @@ module.exports = function () {
         "name" : { "type" : String, required : true },
         "residents" : [ { "type" : String } ],
         "address" : { "type" : String },
+        "rooms" : [ { "type" : Schema.Types.Mixed } ],
         "status" : { type: Boolean, default: true },
         "created" : { type: Date, default: Date.now },
         "edited" : { type: Date, default: Date.now }

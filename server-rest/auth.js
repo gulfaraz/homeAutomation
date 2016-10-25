@@ -58,14 +58,11 @@ module.exports = function (User, configuration) {
         "passReqToCallback" : true
     }, function (req, userName, password, callback) {
         process.nextTick(function () {
-                var query = { "userName" : userName };
-                User.find(query)
-                    .limit(1)
+                User.findOne({ "userName" : userName })
                     .exec(function (err, user) {
                         if(err) {
                             callback(err.toString());
                         } else {
-                            user = user[0];
                             if(!user) {
                                 callback("User Not Found");
                             } else {
@@ -92,11 +89,9 @@ module.exports = function (User, configuration) {
                     if(err) {
                         callback(err);
                     } else {
-                        User.find({ "_id" : decoded.userId })
-                            .limit(1)
+                        User.findById(decoded.userId)
                             .exec(function (err, user) {
                                 if(user) {
-                                    user = user[0];
                                     if(err) {
                                         callback(err);
                                     } else {
