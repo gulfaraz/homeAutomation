@@ -41,11 +41,27 @@ module.exports = function () {
         });
     };
 
+    var TerminalSchema = new Schema({
+        "terminalName" : { "type" : String, required : true },
+        "type" : { "type" : String },
+        "state" : { type: Boolean, default: true },
+        "created" : { type: Date, default: Date.now },
+        "edited" : { type: Date, default: Date.now }
+    });
+
+    var RoomSchema = new Schema({
+        "roomName" : { "type" : String, required : true },
+        "terminals" : [ TerminalSchema ],
+        "status" : { type: Boolean, default: true },
+        "created" : { type: Date, default: Date.now },
+        "edited" : { type: Date, default: Date.now }
+    });
+
     var HomeSchema = new Schema({
-        "name" : { "type" : String, required : true },
+        "homeName" : { "type" : String, required : true },
         "residents" : [ { "type" : String } ],
         "address" : { "type" : String },
-        "rooms" : [ { "type" : Schema.Types.Mixed } ],
+        "rooms" : [ RoomSchema ],
         "status" : { type: Boolean, default: true },
         "created" : { type: Date, default: Date.now },
         "edited" : { type: Date, default: Date.now }

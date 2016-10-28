@@ -5,11 +5,11 @@ module.exports = function (express, auth, modules) {
     router.use(function(req, res, next) {
 
         res.forbidden = function (message) {
-            res.status(401).send(message);
+            res.status(401).json(message);
         };
 
         res.error = function (message) {
-            res.status(500).send(message);
+            res.status(500).json(message);
         };
 
         res.ok = function (data) {

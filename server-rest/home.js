@@ -10,7 +10,7 @@ module.exports = function (Home) {
 
     function addHome(homeObject, callback) {
         var home = new Home();
-        home.name = homeObject.name;
+        home.homeName = homeObject.homeName;
         home.residents = homeObject.residents;
         home.address = homeObject.address;
         home.save(callback);
@@ -20,11 +20,20 @@ module.exports = function (Home) {
         Home.findById(homeId).remove(callback);
     };
 
+    function validateHome(homeObject, callback) {
+        if(homeObject.homeName && homeObject.homeName.length > 0) {
+            callback(null, homeObject);
+        } else {
+            callback("homeName is missing");
+        }
+    };
+
     return {
         getUserHomes: getUserHomes,
         getHome: getHome,
         addHome: addHome,
-        removeHome: removeHome
+        removeHome: removeHome,
+        validateHome: validateHome,
+        Room: require("./room")(Home)
     };
-
 };

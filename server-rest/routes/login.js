@@ -3,7 +3,7 @@ module.exports = function (router, auth, User) {
     router.post("/", function (req, res, next) {
         auth.passport.authenticate("local", function (err, user, info) {
             if(err || !user) {
-                res.forbidden((err && err.toString()) || info.message);
+                res.forbidden({ message : ((err && err.toString()) || info.message) });
             } else {
                 User.logIn(req, res, user);
             }
@@ -14,7 +14,7 @@ module.exports = function (router, auth, User) {
         if(req.user) {
             User.logIn(req, res, user);
         } else {
-            res.forbidden("Invalid Token");
+            res.forbidden({ message : "Invalid Token" });
         }
     });
 

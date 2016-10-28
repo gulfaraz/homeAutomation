@@ -1,34 +1,40 @@
 module.exports = function (router, auth, Home) {
 
-    router.post("/new", auth.passport.authenticate("bearer", { "session" : false }), function (req, res) {
-        if(req.user) {
-            var newHomeObject = {};
-            newHomeObject.name = req.body.name;
-            newHomeObject.address = req.body.address;
-            newHomeObject.residents = [ req.user.userId ];
-            Home.addHome(newHomeObject, function (err, home) {
-                if(err || !home) {
-                    res.error(err && err.toString());
-                } else {
-                    res.ok({ "home" : home });
-                }
-            });
-        } else {
-            res.forbidden("Invalid Token");
-        }
-    });
-
     router.get("/", auth.passport.authenticate("bearer", { "session" : false }), function (req, res) {
         if(req.user) {
             Home.getUserHomes(req.user.userId, function (err, home) {
                 if(err || !home) {
-                    res.error(err && err.toString());
+                    res.error({ message : err && err.toString() });
                 } else {
-                    res.ok({ "home" : home });
+                    res.ok({ "message" : "Fetched User Homes", "home" : home });
                 }
             });
         } else {
-            res.forbidden("Invalid Token");
+            res.forbidden({ message : "Invalid Token" });
+        }
+    });
+
+    router.post("/newHome", auth.passport.authenticate("bearer", { "session" : false }), function (req, res) {
+        if(req.user) {
+            var newHomeObject = {};
+            newHomeObject.homeName = req.body.homeName;
+            newHomeObject.address = req.body.address;
+            newHomeObject.residents = [ req.user.userId ];
+            Home.validateHome(newHomeObject, function (err, validatedHomeObject) {
+                if(err || !validatedHomeObject) {
+                    res.error({ message: err });
+                } else {
+                    Home.addHome(validatedHomeObject, function (err, home) {
+                        if(err || !home) {
+                            res.error({ message : err && err.toString() });
+                        } else {
+                            res.ok({ "message" : "Created New Home", "home" : home });
+                        }
+                    });
+                }
+            });
+        } else {
+            res.forbidden({ message : "Invalid Token" });
         }
     });
 
@@ -36,13 +42,13 @@ module.exports = function (router, auth, Home) {
         if(req.user) {
             Home.getHome(req.params.homeId, function (err, home) {
                 if(err || !home) {
-                    res.error(err && err.toString());
+                    res.error({ message : err && err.toString() });
                 } else {
-                    res.ok({ "home" : home });
+                    res.ok({ "message" : "Found home information", "home" : home });
                 }
             });
         } else {
-            res.forbidden("Invalid Token");
+            res.forbidden({ message : "Invalid Token" });
         }
     });
 
@@ -50,15 +56,17 @@ module.exports = function (router, auth, Home) {
         if(req.user) {
             Home.removeHome(req.params.homeId, function (err, home) {
                 if(err || !home) {
-                    res.error(err && err.toString());
+                    res.error({ message : err && err.toString() });
                 } else {
                     res.ok("Home " + req.params.homeId + " Deleted");
                 }
             });
         } else {
-            res.forbidden("Invalid Token");
+            res.forbidden({ message : "Invalid Token" });
         }
     });
+
+    router.use(require("./room")(router, auth, Home.Room));
 
     return router;
 };
