@@ -314,17 +314,20 @@ define('home/newHome',['exports', 'aurelia-framework', 'aurelia-router', '../htt
         newHome.prototype.add = function add() {
             var _this = this;
 
-            this.http.fetch("/home/new", {
+            this.http.fetch("/home/newHome", {
                 method: "POST",
                 headers: {
                     "Accept": "application/json",
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ "name": this.homeName, "address": this.address })
+                body: JSON.stringify({ "homeName": this.homeName, "address": this.address })
             }).then(function (response) {
                 return response.json();
             }).then(function (data) {
-                _this.router.navigateToRoute("viewHome", { homeId: data.home._id });
+                _this.message = data.message;
+                if (data.home) {
+                    _this.router.navigateToRoute("viewHome", { homeId: data.home._id });
+                }
             });
         };
 
@@ -361,7 +364,10 @@ define('home/viewHome',['exports', 'aurelia-framework', 'aurelia-router', '../ht
             this.http.fetch("/home/" + params.homeId).then(function (response) {
                 return response.json();
             }).then(function (data) {
-                _this.home = data.home;
+                _this.message = data.message;
+                if (data.home) {
+                    _this.home = data.home;
+                }
             });
         };
 
@@ -373,8 +379,96 @@ define('home/viewHome',['exports', 'aurelia-framework', 'aurelia-router', '../ht
             }).then(function (response) {
                 return response.json();
             }).then(function (data) {
-                console.log(data);
+                _this2.message = data.message;
                 _this2.router.navigateToRoute("home");
+            });
+        };
+
+        viewHome.prototype.addRoom = function addRoom() {
+            var _this3 = this;
+
+            this.http.fetch("/home/" + this.home._id + "/room/newRoom", {
+                method: "PUT",
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ "roomName": this.newRoomName })
+            }).then(function (response) {
+                return response.json();
+            }).then(function (data) {
+                _this3.message = data.message;
+                if (data.home) {
+                    _this3.home = data.home;
+                    _this3.newRoomName = "";
+                }
+            });
+        };
+
+        viewHome.prototype.removeRoom = function removeRoom(roomId) {
+            var _this4 = this;
+
+            this.http.fetch("/home/" + this.home._id + "/room/" + roomId, {
+                method: "DELETE"
+            }).then(function (response) {
+                return response.json();
+            }).then(function (data) {
+                _this4.message = data.message;
+                if (data.home) {
+                    _this4.home = data.home;
+                }
+            });
+        };
+
+        viewHome.prototype.addTerminal = function addTerminal(roomId) {
+            var _this5 = this;
+
+            this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/newTerminal", {
+                method: "PUT",
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ "terminalName": this.newTerminalName, "terminalType": this.newTerminalType })
+            }).then(function (response) {
+                return response.json();
+            }).then(function (data) {
+                _this5.message = data.message;
+                if (data.home) {
+                    _this5.home = data.home;
+                    _this5.newTerminalName = "";
+                    _this5.newTerminalType = "";
+                }
+            });
+        };
+
+        viewHome.prototype.removeTerminal = function removeTerminal(roomId, terminalId) {
+            var _this6 = this;
+
+            this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId, {
+                method: "DELETE"
+            }).then(function (response) {
+                return response.json();
+            }).then(function (data) {
+                _this6.message = data.message;
+                if (data.home) {
+                    _this6.home = data.home;
+                }
+            });
+        };
+
+        viewHome.prototype.setTerminalState = function setTerminalState(roomId, terminalId, state) {
+            var _this7 = this;
+
+            this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId + "/" + state, {
+                method: "GET"
+            }).then(function (response) {
+                return response.json();
+            }).then(function (data) {
+                _this7.message = data.message;
+                if (data.home) {
+                    _this7.home = data.home;
+                }
             });
         };
 
@@ -1887,9 +1981,9 @@ define('aurelia-auth/auth-filter',["exports"], function (exports) {
   }();
 });
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\n    <require from='nav-bar/nav-bar'></require>\n    <nav-bar router.bind=\"router\"></nav-bar>\n    <div class=\"container\">\n        <router-view></router-view>\n    </div>\n</template>\n"; });
-define('text!home/home.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div repeat.for=\"home of homes\">\n        <a route-href=\"route: viewHome; params.bind: { homeId: home._id }\" title=\"View Home\">${home.name}</a>\n    </div>\n    <hr>\n    <a route-href=\"route: newHome\" title=\"Add A Home\">Add HOME</a>\n</template>\n"; });
-define('text!home/newHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <form role=\"form\" submit.delegate=\"add()\">\n        <div>\n            <div>\n                <label for=\"homeName\">Home Name</label>\n                <input name=\"homeName\" id=\"homeName\" type=\"text\" value.bind=\"homeName\">\n            </div>\n        </div>\n        <div>\n            <div>\n                <label for=\"address\">Address</label>\n                <input name=\"address\" id=\"address\" type=\"text\" value.bind=\"address\">\n            </div>\n        </div>\n        <div>\n            <button type=\"submit\">Add</button>\n        </div>\n    </form>\n    <hr>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
-define('text!home/viewHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${home.name}</h1>\n    <div>${home.address}</div>\n    <button type=\"button\" click.delegate=\"removeHome()\">DELETE</button>\n    <hr>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
+define('text!home/home.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div repeat.for=\"home of homes\">\n        <a route-href=\"route: viewHome; params.bind: { homeId: home._id }\" title=\"View Home\">${home.homeName}</a>\n    </div>\n    <hr>\n    <a route-href=\"route: newHome\" title=\"Add A Home\">Add HOME</a>\n</template>\n"; });
+define('text!home/newHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <form role=\"form\" submit.delegate=\"add()\">\n        <div>\n            <div>\n                <label for=\"homeName\">Home Name</label>\n                <input name=\"homeName\" id=\"homeName\" type=\"text\" value.bind=\"homeName\">\n            </div>\n        </div>\n        <div>\n            <div>\n                <label for=\"address\">Address</label>\n                <input name=\"address\" id=\"address\" type=\"text\" value.bind=\"address\">\n            </div>\n        </div>\n        <div>\n            <button type=\"submit\">Add</button>\n        </div>\n    </form>\n    <hr>\n    <div>${message}</div>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
+define('text!home/viewHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${home.homeName}</h1>\n    <div>${home.address}</div>\n    <div repeat.for=\"room of home.rooms\">\n        <div>${room.roomName}</div>\n        <div repeat.for=\"terminal of room.terminals\">\n            <div>${terminal.terminalName}</div>\n            <div>${terminal.type}</div>\n            <div>${terminal.state}</div>\n            <div>\n                <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'toggle')\">Toggle</button>\n                <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'on')\">On</button>\n                <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'off')\">Off</button>\n            </div>\n            <button type=\"button\" click.delegate=\"removeTerminal(room._id, terminal._id)\">Remove Terminal</button>\n            <hr>\n        </div>\n        <div>\n            <div>\n                <input name=\"newTerminalName\" id=\"newTerminalName\" type=\"text\" value.bind=\"$parent.newTerminalName\">\n            </div>\n            <div>\n                <select name=\"newTerminalType\" id=\"newTerminalType\" value.bind=\"$parent.newTerminalType\">\n                    <option value=\"\">Select</option>\n                    <option value=\"light\">Light</option>\n                    <option value=\"fan\">Fan</option>\n                </select>\n            </div>\n            <div>\n                <button type=\"button\" click.delegate=\"addTerminal(room._id)\">Add Terminal</button>\n            </div>\n        </div>\n        <button type=\"button\" click.delegate=\"removeRoom(room._id)\">Remove Room</button>\n        <hr>\n    </div>\n    <div>\n        <input name=\"newRoomName\" id=\"newRoomName\" type=\"text\" value.bind=\"newRoomName\">\n        <button type=\"button\" click.delegate=\"addRoom()\">Add Room</button>\n    </div>\n    <div>\n        <button type=\"button\" click.delegate=\"removeHome()\">DELETE</button>\n    </div>\n    <hr>\n    <div>${message}</div>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
 define('text!login/login.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div>\n        <form role=\"form\" submit.delegate=\"login()\">\n            <div>\n                <div>\n                    <label for=\"userName\">User Name</label>\n                    <input name=\"userName\" id=\"userName\" type=\"text\" value.bind=\"userName\">\n                </div>\n            </div>\n            <div>\n                <div>\n                    <label for=\"password\">Password</label>\n                    <input name=\"password\" id=\"password\" type=\"password\" value.bind=\"password\">\n                </div>\n            </div>\n            <div>\n                <button type=\"submit\">Login</button>\n            </div>\n        </form>\n        <div class=\"alert alert-danger\" if.bind=\"error\">${error}</div>\n    </div>\n</template>\n"; });
 define('text!logout/logout.html', ['module'], function(module) { module.exports = "<!-- Aurelia expects a template for each route.\nWe don't actuall need a template for logging out, \nbut we provide an empty one to not get any errors -->\n<template></template>"; });
 define('text!nav-bar/nav-bar.html', ['module'], function(module) { module.exports = "<template>\n    <ul if.bind=\"!isAuthenticated\" class=\"nav navbar-nav navbar-right\">\n        <li><a route-href=\"route: login\">Login</a></li>\n    </ul>\n    <ul if.bind=\"isAuthenticated\" class=\"nav navbar-nav navbar-right\">\n        <li><a route-href=\"route: logout\">Logout</a></li>\n    </ul>\n</template>\n"; });

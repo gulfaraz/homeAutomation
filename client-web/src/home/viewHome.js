@@ -15,7 +15,10 @@ export class viewHome {
         this.http.fetch("/home/" + params.homeId)
             .then(response =>  response.json())
             .then(data => {
-                this.home = data.home;
+                this.message = data.message;
+                if(data.home) {
+                    this.home = data.home;
+                }
             });
     }
 
@@ -25,8 +28,86 @@ export class viewHome {
             })
             .then(response =>  response.json())
             .then(data => {
-                console.log(data);
+                this.message = data.message;
                 this.router.navigateToRoute("home");
+            });
+    }
+
+    addRoom() {
+        this.http.fetch("/home/" + this.home._id + "/room/newRoom", {
+                method: "PUT",
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ "roomName" : this.newRoomName })
+            })
+            .then(response =>  response.json())
+            .then(data => {
+                this.message = data.message;
+                if(data.home) {
+                    this.home = data.home;
+                    this.newRoomName = "";
+                }
+            });
+    }
+
+    removeRoom(roomId) {
+        this.http.fetch("/home/" + this.home._id + "/room/" + roomId, {
+                method: "DELETE"
+            })
+            .then(response =>  response.json())
+            .then(data => {
+                this.message = data.message;
+                if(data.home) {
+                    this.home = data.home;
+                }
+            });
+    }
+
+    addTerminal(roomId) {
+        this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/newTerminal", {
+                method: "PUT",
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ "terminalName" : this.newTerminalName, "terminalType" : this.newTerminalType })
+            })
+            .then(response =>  response.json())
+            .then(data => {
+                this.message = data.message;
+                if(data.home) {
+                    this.home = data.home;
+                    this.newTerminalName = "";
+                    this.newTerminalType = "";
+                }
+            });
+    }
+
+    removeTerminal(roomId, terminalId) {
+        this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId, {
+                method: "DELETE"
+            })
+            .then(response =>  response.json())
+            .then(data => {
+                this.message = data.message;
+                if(data.home) {
+                    this.home = data.home;
+                }
+            });
+    }
+
+    setTerminalState(roomId, terminalId, state) {
+        this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId + "/" + state, {
+                method: "GET"
+            })
+            .then(response =>  response.json())
+            .then(data => {
+                this.message = data.message;
+                if(data.home) {
+                    this.home = data.home;
+                }
             });
     }
 }

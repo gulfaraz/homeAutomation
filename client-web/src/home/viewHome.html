@@ -1,7 +1,46 @@
 <template>
-    <h1>${home.name}</h1>
+    <h1>${home.homeName}</h1>
     <div>${home.address}</div>
-    <button type="button" click.delegate="removeHome()">DELETE</button>
+    <div repeat.for="room of home.rooms">
+        <div>${room.roomName}</div>
+        <div repeat.for="terminal of room.terminals">
+            <div>${terminal.terminalName}</div>
+            <div>${terminal.type}</div>
+            <div>${terminal.state}</div>
+            <div>
+                <button type="button" click.delegate="setTerminalState(room._id, terminal._id, 'toggle')">Toggle</button>
+                <button type="button" click.delegate="setTerminalState(room._id, terminal._id, 'on')">On</button>
+                <button type="button" click.delegate="setTerminalState(room._id, terminal._id, 'off')">Off</button>
+            </div>
+            <button type="button" click.delegate="removeTerminal(room._id, terminal._id)">Remove Terminal</button>
+            <hr>
+        </div>
+        <div>
+            <div>
+                <input name="newTerminalName" id="newTerminalName" type="text" value.bind="$parent.newTerminalName">
+            </div>
+            <div>
+                <select name="newTerminalType" id="newTerminalType" value.bind="$parent.newTerminalType">
+                    <option value="">Select</option>
+                    <option value="light">Light</option>
+                    <option value="fan">Fan</option>
+                </select>
+            </div>
+            <div>
+                <button type="button" click.delegate="addTerminal(room._id)">Add Terminal</button>
+            </div>
+        </div>
+        <button type="button" click.delegate="removeRoom(room._id)">Remove Room</button>
+        <hr>
+    </div>
+    <div>
+        <input name="newRoomName" id="newRoomName" type="text" value.bind="newRoomName">
+        <button type="button" click.delegate="addRoom()">Add Room</button>
+    </div>
+    <div>
+        <button type="button" click.delegate="removeHome()">DELETE</button>
+    </div>
     <hr>
+    <div>${message}</div>
     <a route-href="route: home" title="Cancel">Back</a>
 </template>
