@@ -12,9 +12,9 @@ export class Home {
 
     activate() {
         this.http.fetch("/home")
-        .then(response =>  response.json())
-        .then(data => {
-            this.homes = data.home;
-        });
+            .then(response =>  response.json())
+            .then(data => {
+                this.homes = data.home;
+            });
     }
 }

@@ -20,34 +20,41 @@ export default class {
                     route: ['','home'],
                     name: 'home',
                     moduleId: 'home/home',
-                    title:'Home',
+                    title: 'Home',
                     auth: true
                 },
                 {
                     route: 'home/new',
                     name: 'newHome',
                     moduleId: 'home/newHome',
-                    title:'Login',
+                    title: 'Login',
                     auth: true
                 },
                 {
                     route: 'home/:homeId',
                     name: 'viewHome',
                     moduleId: 'home/viewHome',
-                    title:'View Home',
+                    title: 'View Home',
                     auth: true
                 },
                 {
                     route: 'login',
                     name: 'login',
                     moduleId: 'login/login',
-                    title:'Login'
+                    title: 'Login'
                 },
                 {
                     route: 'logout',
                     name: 'logout',
                     moduleId: 'logout/logout',
-                    title:'Logout'
+                    title: 'Logout'
+                },
+                {
+                    route: 'network',
+                    name: 'network',
+                    moduleId: 'network/network',
+                    title: 'Network',
+                    auth: true
                 }
             ]);
         };

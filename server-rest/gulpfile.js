@@ -59,7 +59,8 @@ gulp.task("default", function () {
 
     var modules = {
         "User" : require("./user")(),
-        "Home" : require("./home")(models.Home)
+        "Home" : require("./home")(models.Home),
+        "Network" : require("./network")(models.Network)
     };
     app.use(require("./routes/routes")(express, auth, modules));
     app.listen(8080);
