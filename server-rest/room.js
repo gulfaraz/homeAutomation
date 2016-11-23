@@ -1,4 +1,4 @@
-module.exports = function (Home) {
+module.exports = function (Home, mqttServer) {
 
     function addRoom(homeId, newRoom, callback) {
         Home.findById(homeId).exec(function (err, home) {
@@ -30,7 +30,6 @@ module.exports = function (Home) {
         addRoom: addRoom,
         removeRoom: removeRoom,
         validateRoom: validateRoom,
-        Terminal: require("./terminal")(Home)
+        Terminal: require("./terminal")(Home, mqttServer)
     };
-
 };

@@ -1,9 +1,9 @@
-module.exports = function (Home) {
+module.exports = function (Home, mqttServer) {
 
     function addTerminal(homeId, roomId, newTerminal, callback) {
         Home.findById(homeId).exec(function (err, home) {
             if(err || !home) {
-                callback(err || "ADD TERMINAL Home Not Found");
+                callback(err || "Home Not Found");
             } else {
                 var newTerminalObject = {
                     terminalName: newTerminal.terminalName,
@@ -19,7 +19,7 @@ module.exports = function (Home) {
     function removeTerminal(homeId, roomId, terminalId, callback) {
         Home.findById(homeId).exec(function (err, home) {
             if(err || !home) {
-                callback(err || "REMOVE TERMINAL Home Not Found");
+                callback(err || "Home Not Found");
             } else {
                 home.rooms.id(roomId).terminals.id(terminalId).remove();
                 home.save(callback);
@@ -52,6 +52,9 @@ module.exports = function (Home) {
                 } else {
                     callback("Invalid Terminal State");
                 }
+                if(state === "toggle" || state === "on" || state === "off") {
+                    mqttServer.controlBroadcast(terminalId, (terminal.state ? "on" : "off"));
+                }
                 home.save(callback);
             }
         });
@@ -63,5 +66,4 @@ module.exports = function (Home) {
         validateTerminal: validateTerminal,
         setTerminalState: setTerminalState
     };
-
 };

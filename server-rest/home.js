@@ -1,4 +1,4 @@
-module.exports = function (Home) {
+module.exports = function (Home, mqttServer) {
 
     function getUserHomes(userId, callback) {
         Home.find({ residents: userId }).exec(callback);
@@ -34,6 +34,6 @@ module.exports = function (Home) {
         addHome: addHome,
         removeHome: removeHome,
         validateHome: validateHome,
-        Room: require("./room")(Home)
+        Room: require("./room")(Home, mqttServer)
     };
 };
