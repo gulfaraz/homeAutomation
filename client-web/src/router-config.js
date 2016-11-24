@@ -48,13 +48,6 @@ export default class {
                     name: 'logout',
                     moduleId: 'logout/logout',
                     title: 'Logout'
-                },
-                {
-                    route: 'network',
-                    name: 'network',
-                    moduleId: 'network/network',
-                    title: 'Network',
-                    auth: true
                 }
             ]);
         };

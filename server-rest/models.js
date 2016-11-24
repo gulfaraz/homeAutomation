@@ -67,19 +67,9 @@ module.exports = function () {
         "edited" : { "type" : Date, "default" : Date.now }
     });
 
-    var NetworkSchema = new Schema({
-        "networkName" : { "type" : String, "required" : true },
-        "password" : { "type" : String },
-        "owner" : { "type" : mongoose.Schema.Types.ObjectId, "ref" : "User" },
-        "status" : { "type" : Boolean, "default" : true },
-        "created" : { "type" : Date, "default" : Date.now },
-        "edited" : { "type" : Date, "default" : Date.now }
-    });
-
     return {
         "User" : mongoose.model("User", UserSchema),
-        "Home" : mongoose.model("Home", HomeSchema),
-        "Network" : mongoose.model("Network", NetworkSchema)
+        "Home" : mongoose.model("Home", HomeSchema)
     };
 
 };

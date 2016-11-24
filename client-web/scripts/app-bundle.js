@@ -234,12 +234,6 @@ define('router-config',['exports', 'aurelia-auth', 'aurelia-framework', 'aurelia
                     name: 'logout',
                     moduleId: 'logout/logout',
                     title: 'Logout'
-                }, {
-                    route: 'network',
-                    name: 'network',
-                    moduleId: 'network/network',
-                    title: 'Network',
-                    auth: true
                 }]);
             };
 
@@ -658,116 +652,6 @@ define('nav-bar/nav-bar',['exports', 'aurelia-framework', 'aurelia-auth'], funct
             return null;
         }
     })), _class2)) || _class);
-});
-define('network/network',['exports', 'aurelia-framework', '../http'], function (exports, _aureliaFramework, _http) {
-    'use strict';
-
-    Object.defineProperty(exports, "__esModule", {
-        value: true
-    });
-    exports.Home = undefined;
-
-    function _classCallCheck(instance, Constructor) {
-        if (!(instance instanceof Constructor)) {
-            throw new TypeError("Cannot call a class as a function");
-        }
-    }
-
-    var _dec, _class;
-
-    var Home = exports.Home = (_dec = (0, _aureliaFramework.inject)(_http.CustomHttpClient), _dec(_class = function () {
-        function Home(http) {
-            _classCallCheck(this, Home);
-
-            this.title = "Networks";
-            this.networkName = "";
-            this.password = "";
-
-            this.loadNetworks = function (that) {
-                return function () {
-                    that.loading = true;
-                    that.http.fetch("/network").then(function (response) {
-                        return response.json();
-                    }).then(function (data) {
-                        that.networks = data.networks.sort(function (a, b) {
-                            return a.linked ? -1 : b.linked ? 1 : a.ssid > b.ssid;
-                        });
-                        that.loading = false;
-                    });
-                };
-            }(this);
-
-            this.http = http;
-        }
-
-        Home.prototype.activate = function activate() {
-            this.loadNetworks();
-            setInterval(this.loadNetworks, 5000);
-        };
-
-        Home.prototype.confirmNetworkLink = function confirmNetworkLink(network) {
-            this.networkName = network.ssid;
-            this.password = null;
-            this.showNetworkLinkForm = true;
-        };
-
-        Home.prototype.cancelNetworkLink = function cancelNetworkLink() {
-            this.networkName = null;
-            this.password = null;
-            this.showNetworkLinkForm = false;
-        };
-
-        Home.prototype.confirmNetworkUnlink = function confirmNetworkUnlink(network) {
-            this.networkName = network.ssid;
-            this.networkId = network.id;
-            this.showNetworkUnlinkForm = true;
-        };
-
-        Home.prototype.cancelNetworkUnlink = function cancelNetworkUnlink() {
-            this.networkName = null;
-            this.networkId = null;
-            this.showNetworkUnlinkForm = false;
-        };
-
-        Home.prototype.linkNetwork = function linkNetwork() {
-            var _this = this;
-
-            this.http.fetch("/network/link", {
-                method: "POST",
-                headers: {
-                    "Accept": "application/json",
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ "networkName": this.networkName, "password": this.password })
-            }).then(function (response) {
-                return response.json();
-            }).then(function (data) {
-                _this.message = data.message;
-                _this.showNetworkLinkForm = false;
-                if (!_this.loading) {
-                    _this.loadNetworks();
-                }
-            });
-        };
-
-        Home.prototype.unlinkNetwork = function unlinkNetwork() {
-            var _this2 = this;
-
-            this.http.fetch("/network/" + this.networkId, {
-                method: "DELETE"
-            }).then(function (response) {
-                return response.json();
-            }).then(function (data) {
-                _this2.message = data.message;
-                _this2.showNetworkUnlinkForm = false;
-                if (!_this2.loading) {
-                    _this2.loadNetworks();
-                }
-            });
-        };
-
-        return Home;
-    }()) || _class);
 });
 define('resources/index',["exports"], function (exports) {
   "use strict";
@@ -2097,11 +1981,10 @@ define('aurelia-auth/auth-filter',["exports"], function (exports) {
   }();
 });
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\n    <require from='nav-bar/nav-bar'></require>\n    <nav-bar router.bind=\"router\"></nav-bar>\n    <div class=\"container\">\n        <router-view></router-view>\n    </div>\n</template>\n"; });
-define('text!home/home.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div repeat.for=\"home of homes\">\n        <a route-href=\"route: viewHome; params.bind: { homeId: home._id }\" title=\"View Home\">${home.homeName}</a>\n    </div>\n    <hr>\n    <a route-href=\"route: newHome\" title=\"Add A Home\">Add HOME</a>\n    <a route-href=\"route: network\" title=\"Manage Networks\">Network</a>\n</template>\n"; });
+define('text!home/home.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div repeat.for=\"home of homes\">\n        <a route-href=\"route: viewHome; params.bind: { homeId: home._id }\" title=\"View Home\">${home.homeName}</a>\n    </div>\n    <hr>\n    <a route-href=\"route: newHome\" title=\"Add A Home\">Add HOME</a>\n</template>\n"; });
 define('text!home/newHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <form role=\"form\" submit.delegate=\"add()\">\n        <div>\n            <div>\n                <label for=\"homeName\">Home Name</label>\n                <input name=\"homeName\" id=\"homeName\" type=\"text\" value.bind=\"homeName\">\n            </div>\n        </div>\n        <div>\n            <div>\n                <label for=\"address\">Address</label>\n                <input name=\"address\" id=\"address\" type=\"text\" value.bind=\"address\">\n            </div>\n        </div>\n        <div>\n            <button type=\"submit\">Add</button>\n        </div>\n    </form>\n    <hr>\n    <div>${message}</div>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
 define('text!home/viewHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${home.homeName}</h1>\n    <div>${home.address}</div>\n    <div repeat.for=\"room of home.rooms\">\n        <div>${room.roomName}</div>\n        <div repeat.for=\"terminal of room.terminals\">\n            <div>${terminal.terminalName}</div>\n            <div>${terminal.type}</div>\n            <div>${terminal.state}</div>\n            <div>\n                <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'toggle')\">Toggle</button>\n                <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'on')\">On</button>\n                <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'off')\">Off</button>\n            </div>\n            <button type=\"button\" click.delegate=\"removeTerminal(room._id, terminal._id)\">Remove Terminal</button>\n            <hr>\n        </div>\n        <div>\n            <div>\n                <input name=\"newTerminalName\" id=\"newTerminalName\" type=\"text\" value.bind=\"$parent.newTerminalName\">\n            </div>\n            <div>\n                <select name=\"newTerminalType\" id=\"newTerminalType\" value.bind=\"$parent.newTerminalType\">\n                    <option value=\"\">Select</option>\n                    <option value=\"light\">Light</option>\n                    <option value=\"fan\">Fan</option>\n                </select>\n            </div>\n            <div>\n                <button type=\"button\" click.delegate=\"addTerminal(room._id)\">Add Terminal</button>\n            </div>\n        </div>\n        <button type=\"button\" click.delegate=\"removeRoom(room._id)\">Remove Room</button>\n        <hr>\n    </div>\n    <div>\n        <input name=\"newRoomName\" id=\"newRoomName\" type=\"text\" value.bind=\"newRoomName\">\n        <button type=\"button\" click.delegate=\"addRoom()\">Add Room</button>\n    </div>\n    <div>\n        <button type=\"button\" click.delegate=\"removeHome()\">DELETE</button>\n    </div>\n    <hr>\n    <div>${message}</div>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
 define('text!login/login.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div>\n        <form role=\"form\" submit.delegate=\"login()\">\n            <div>\n                <div>\n                    <label for=\"userName\">User Name</label>\n                    <input name=\"userName\" id=\"userName\" type=\"text\" value.bind=\"userName\">\n                </div>\n            </div>\n            <div>\n                <div>\n                    <label for=\"password\">Password</label>\n                    <input name=\"password\" id=\"password\" type=\"password\" value.bind=\"password\">\n                </div>\n            </div>\n            <div>\n                <button type=\"submit\">Login</button>\n            </div>\n        </form>\n        <div class=\"alert alert-danger\" if.bind=\"error\">${error}</div>\n    </div>\n</template>\n"; });
 define('text!logout/logout.html', ['module'], function(module) { module.exports = "<!-- Aurelia expects a template for each route.\nWe don't actuall need a template for logging out, \nbut we provide an empty one to not get any errors -->\n<template></template>"; });
 define('text!nav-bar/nav-bar.html', ['module'], function(module) { module.exports = "<template>\n    <ul if.bind=\"!isAuthenticated\" class=\"nav navbar-nav navbar-right\">\n        <li><a route-href=\"route: login\">Login</a></li>\n    </ul>\n    <ul if.bind=\"isAuthenticated\" class=\"nav navbar-nav navbar-right\">\n        <li><a route-href=\"route: logout\">Logout</a></li>\n    </ul>\n</template>\n"; });
-define('text!network/network.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div if.bind=\"showNetworkLinkForm\">\n        <form role=\"form\" submit.delegate=\"linkNetwork()\">\n            <div>\n                <div>\n                    <label for=\"networkName\">SSID</label>\n                    <input name=\"networkName\" id=\"networkName\" type=\"text\" value.bind=\"networkName\">\n                </div>\n            </div>\n            <div>\n                <div>\n                    <label for=\"password\">Password</label>\n                    <input name=\"password\" id=\"password\" type=\"password\" value.bind=\"password\">\n                </div>\n            </div>\n            <div>\n                <button type=\"submit\">Link</button>\n                <button type=\"button\" click.delegate=\"cancelNetworkLink()\">Cancel</button>\n            </div>\n        </form>\n    </div>\n    <div if.bind=\"showNetworkUnlinkForm\">\n        <form role=\"form\" submit.delegate=\"unlinkNetwork()\">\n            <div>\n                Are you sure you want to unlink the network ${networkName} ?\n            </div>\n            <div>\n                <button type=\"submit\">Unlink</button>\n                <button type=\"button\" click.delegate=\"cancelNetworkUnlink()\">Cancel</button>\n            </div>\n        </form>\n    </div>\n    <div if.bind=\"!showNetworkLinkForm && !showNetworkUnlinkForm\">\n        <div if.bind=\"!loading\">${networks.length} Networks Found</div>\n        <div if.bind=\"loading\">Scanning for networks...</div>\n        <div repeat.for=\"network of networks\">\n            <div class=\"networkInformation\">\n                <div class=\"networkName\">${network.ssid}</div>\n                <div class=\"networkStrength\">${network.signal_level}</div>\n                <div class=\"networkActions\">\n                    <button if.bind=\"!network.linked\" type=\"button\" click.delegate=\"confirmNetworkLink(network)\">Link</button>\n                    <button if.bind=\"network.linked\" type=\"button\" click.delegate=\"confirmNetworkUnlink(network)\">Unlink</button>\n                </div>\n            </div>\n        </div>\n    </div>\n    <hr>\n    <div>${message}</div>\n    <a route-href=\"route: home\" title=\"Go Back\">Back</a>\n</template>\n"; });
 //# sourceMappingURL=app-bundle.js.map

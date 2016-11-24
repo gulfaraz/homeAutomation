@@ -24,6 +24,5 @@ module.exports = function (express, auth, modules) {
     });
     router.use(api_root + "login", require("./login")(express.Router(), auth, modules.User));
     router.use(api_root + "home", require("./home")(express.Router(), auth, modules.Home));
-    router.use(api_root + "network", require("./network")(express.Router(), auth, modules.Network));
     return router;
 };
