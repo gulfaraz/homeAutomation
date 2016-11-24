@@ -24,7 +24,8 @@ gulp.task("default", function () {
 
         var modules = {
             "User" : require("./user")(),
-            "Home" : require("./home")(models.Home, mqttServer)
+            "Home" : require("./home")(models.Home, mqttServer),
+            "Device" : require("./device")(models.Home)
         };
 
         checkIfUserExists(function (err, users) {

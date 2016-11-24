@@ -9,9 +9,10 @@
             <div>${terminal.state}</div>
             <div>
                 <button type="button" click.delegate="setTerminalState(room._id, terminal._id, 'toggle')">Toggle</button>
-                <button type="button" click.delegate="setTerminalState(room._id, terminal._id, 'on')">On</button>
-                <button type="button" click.delegate="setTerminalState(room._id, terminal._id, 'off')">Off</button>
+                <button type="button" click.delegate="setTerminalState(room._id, terminal._id, 'on')" if.bind="!terminal.state">On</button>
+                <button type="button" click.delegate="setTerminalState(room._id, terminal._id, 'off')" if.bind="terminal.state">Off</button>
             </div>
+            <button type="button" click.delegate="unlinkTerminal(room._id, terminal._id)" if.bind="terminal.linked">Unlink Device</button>
             <button type="button" click.delegate="removeTerminal(room._id, terminal._id)">Remove Terminal</button>
             <hr>
         </div>

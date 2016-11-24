@@ -85,6 +85,19 @@ export class viewHome {
             });
     }
 
+    unlinkTerminal(roomId, terminalId) {
+        this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId + "/unlink", {
+                method: "GET"
+            })
+            .then(response =>  response.json())
+            .then(data => {
+                this.message = data.message;
+                if(data.home) {
+                    this.home = data.home;
+                }
+            });
+    }
+
     removeTerminal(roomId, terminalId) {
         this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId, {
                 method: "DELETE"

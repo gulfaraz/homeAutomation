@@ -9,14 +9,14 @@ module.exports = function (Home, mqttServer) {
             home.rooms.push(newRoomObject);
             home.save(callback);
         });
-    };
+    }
 
     function removeRoom(homeId, roomId, callback) {
         Home.findById(homeId).exec(function (err, home) {
             home.rooms.id(roomId).remove();
             home.save(callback);
         });
-    };
+    }
 
     function validateRoom(roomObject, callback) {
         if(roomObject.roomName && roomObject.roomName.length > 0) {
@@ -24,7 +24,7 @@ module.exports = function (Home, mqttServer) {
         } else {
             callback("roomName is missing");
         }
-    };
+    }
 
     return {
         addRoom: addRoom,

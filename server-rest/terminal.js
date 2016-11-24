@@ -14,7 +14,7 @@ module.exports = function (Home, mqttServer) {
                 home.save(callback);
             }
         });
-    };
+    }
 
     function removeTerminal(homeId, roomId, terminalId, callback) {
         Home.findById(homeId).exec(function (err, home) {
@@ -25,7 +25,7 @@ module.exports = function (Home, mqttServer) {
                 home.save(callback);
             }
         });
-    };
+    }
 
     function validateTerminal(terminalObject, callback) {
         if(terminalObject.terminalName && terminalObject.terminalName.length > 0) {
@@ -37,7 +37,7 @@ module.exports = function (Home, mqttServer) {
         } else {
             callback("terminalName is missing");
         }
-    };
+    }
 
     function setTerminalState(homeId, roomId, terminalId, state, callback) {
         Home.findById(homeId).exec(function (err, home) {
@@ -58,12 +58,53 @@ module.exports = function (Home, mqttServer) {
                 home.save(callback);
             }
         });
-    };
+    }
+
+   mqttServer.on("published", function (packet, client) {
+       var message = (new String(packet.payload)).toString();
+       var [topic, terminalId] = packet.topic.split("/");
+       if(topic === "Pair") {
+           var [homeId, roomId] = message.split("/");
+           linkTerminal(homeId, roomId, terminalId, function (err, terminal) {
+               var acknowledgementMessage = "paired";
+               if(err) {
+                    acknowledgementMessage = "failed";
+               }
+               mqttServer.acknowledgementBroadcast(terminalId, acknowledgementMessage);
+           });
+       }
+   });
+
+    function linkTerminal(homeId, roomId, terminalId, callback) {
+        Home.findById(homeId).exec(function (err, home) {
+            if(err || !home) {
+                callback(err || "Terminal (" + homeId + "/" + roomId + "/" + terminalId + ") is unavailable");
+            } else {
+                var terminal = home.rooms.id(roomId).terminals.id(terminalId);
+                terminal.linked = true;
+                home.save(callback);
+            }
+        });
+    }
+
+    function unlinkTerminal(homeId, roomId, terminalId, callback) {
+        Home.findById(homeId).exec(function (err, home) {
+            if(err || !home) {
+                callback(err || "Terminal (" + homeId + "/" + roomId + "/" + terminalId + ") is unavailable");
+            } else {
+                var terminal = home.rooms.id(roomId).terminals.id(terminalId);
+                terminal.linked = false;
+                mqttServer.pairBroadcast(terminalId, false);
+                home.save(callback);
+            }
+        });
+    }
 
     return {
         addTerminal: addTerminal,
         removeTerminal: removeTerminal,
         validateTerminal: validateTerminal,
-        setTerminalState: setTerminalState
+        setTerminalState: setTerminalState,
+        unlinkTerminal: unlinkTerminal
     };
 };

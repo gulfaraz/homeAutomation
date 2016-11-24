@@ -45,6 +45,7 @@ module.exports = function () {
         "terminalName" : { "type" : String, "required" : true },
         "type" : { "type" : String },
         "state" : { "type" : Boolean, "default" : true },
+        "linked" : { "type" : Boolean, "default" : false },
         "created" : { "type" : Date, "default" : Date.now },
         "edited" : { "type" : Date, "default" : Date.now }
     });

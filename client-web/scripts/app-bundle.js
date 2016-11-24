@@ -442,11 +442,11 @@ define('home/viewHome',['exports', 'aurelia-framework', 'aurelia-router', '../ht
             });
         };
 
-        viewHome.prototype.removeTerminal = function removeTerminal(roomId, terminalId) {
+        viewHome.prototype.unlinkTerminal = function unlinkTerminal(roomId, terminalId) {
             var _this6 = this;
 
-            this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId, {
-                method: "DELETE"
+            this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId + "/unlink", {
+                method: "GET"
             }).then(function (response) {
                 return response.json();
             }).then(function (data) {
@@ -457,17 +457,32 @@ define('home/viewHome',['exports', 'aurelia-framework', 'aurelia-router', '../ht
             });
         };
 
-        viewHome.prototype.setTerminalState = function setTerminalState(roomId, terminalId, state) {
+        viewHome.prototype.removeTerminal = function removeTerminal(roomId, terminalId) {
             var _this7 = this;
 
-            this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId + "/" + state, {
-                method: "GET"
+            this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId, {
+                method: "DELETE"
             }).then(function (response) {
                 return response.json();
             }).then(function (data) {
                 _this7.message = data.message;
                 if (data.home) {
                     _this7.home = data.home;
+                }
+            });
+        };
+
+        viewHome.prototype.setTerminalState = function setTerminalState(roomId, terminalId, state) {
+            var _this8 = this;
+
+            this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId + "/" + state, {
+                method: "GET"
+            }).then(function (response) {
+                return response.json();
+            }).then(function (data) {
+                _this8.message = data.message;
+                if (data.home) {
+                    _this8.home = data.home;
                 }
             });
         };
@@ -1983,7 +1998,7 @@ define('aurelia-auth/auth-filter',["exports"], function (exports) {
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\n    <require from='nav-bar/nav-bar'></require>\n    <nav-bar router.bind=\"router\"></nav-bar>\n    <div class=\"container\">\n        <router-view></router-view>\n    </div>\n</template>\n"; });
 define('text!home/home.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div repeat.for=\"home of homes\">\n        <a route-href=\"route: viewHome; params.bind: { homeId: home._id }\" title=\"View Home\">${home.homeName}</a>\n    </div>\n    <hr>\n    <a route-href=\"route: newHome\" title=\"Add A Home\">Add HOME</a>\n</template>\n"; });
 define('text!home/newHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <form role=\"form\" submit.delegate=\"add()\">\n        <div>\n            <div>\n                <label for=\"homeName\">Home Name</label>\n                <input name=\"homeName\" id=\"homeName\" type=\"text\" value.bind=\"homeName\">\n            </div>\n        </div>\n        <div>\n            <div>\n                <label for=\"address\">Address</label>\n                <input name=\"address\" id=\"address\" type=\"text\" value.bind=\"address\">\n            </div>\n        </div>\n        <div>\n            <button type=\"submit\">Add</button>\n        </div>\n    </form>\n    <hr>\n    <div>${message}</div>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
-define('text!home/viewHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${home.homeName}</h1>\n    <div>${home.address}</div>\n    <div repeat.for=\"room of home.rooms\">\n        <div>${room.roomName}</div>\n        <div repeat.for=\"terminal of room.terminals\">\n            <div>${terminal.terminalName}</div>\n            <div>${terminal.type}</div>\n            <div>${terminal.state}</div>\n            <div>\n                <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'toggle')\">Toggle</button>\n                <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'on')\">On</button>\n                <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'off')\">Off</button>\n            </div>\n            <button type=\"button\" click.delegate=\"removeTerminal(room._id, terminal._id)\">Remove Terminal</button>\n            <hr>\n        </div>\n        <div>\n            <div>\n                <input name=\"newTerminalName\" id=\"newTerminalName\" type=\"text\" value.bind=\"$parent.newTerminalName\">\n            </div>\n            <div>\n                <select name=\"newTerminalType\" id=\"newTerminalType\" value.bind=\"$parent.newTerminalType\">\n                    <option value=\"\">Select</option>\n                    <option value=\"light\">Light</option>\n                    <option value=\"fan\">Fan</option>\n                </select>\n            </div>\n            <div>\n                <button type=\"button\" click.delegate=\"addTerminal(room._id)\">Add Terminal</button>\n            </div>\n        </div>\n        <button type=\"button\" click.delegate=\"removeRoom(room._id)\">Remove Room</button>\n        <hr>\n    </div>\n    <div>\n        <input name=\"newRoomName\" id=\"newRoomName\" type=\"text\" value.bind=\"newRoomName\">\n        <button type=\"button\" click.delegate=\"addRoom()\">Add Room</button>\n    </div>\n    <div>\n        <button type=\"button\" click.delegate=\"removeHome()\">DELETE</button>\n    </div>\n    <hr>\n    <div>${message}</div>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
+define('text!home/viewHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${home.homeName}</h1>\n    <div>${home.address}</div>\n    <div repeat.for=\"room of home.rooms\">\n        <div>${room.roomName}</div>\n        <div repeat.for=\"terminal of room.terminals\">\n            <div>${terminal.terminalName}</div>\n            <div>${terminal.type}</div>\n            <div>${terminal.state}</div>\n            <div>\n                <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'toggle')\">Toggle</button>\n                <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'on')\" if.bind=\"!terminal.state\">On</button>\n                <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'off')\" if.bind=\"terminal.state\">Off</button>\n            </div>\n            <button type=\"button\" click.delegate=\"unlinkTerminal(room._id, terminal._id)\" if.bind=\"terminal.linked\">Unlink Device</button>\n            <button type=\"button\" click.delegate=\"removeTerminal(room._id, terminal._id)\">Remove Terminal</button>\n            <hr>\n        </div>\n        <div>\n            <div>\n                <input name=\"newTerminalName\" id=\"newTerminalName\" type=\"text\" value.bind=\"$parent.newTerminalName\">\n            </div>\n            <div>\n                <select name=\"newTerminalType\" id=\"newTerminalType\" value.bind=\"$parent.newTerminalType\">\n                    <option value=\"\">Select</option>\n                    <option value=\"light\">Light</option>\n                    <option value=\"fan\">Fan</option>\n                </select>\n            </div>\n            <div>\n                <button type=\"button\" click.delegate=\"addTerminal(room._id)\">Add Terminal</button>\n            </div>\n        </div>\n        <button type=\"button\" click.delegate=\"removeRoom(room._id)\">Remove Room</button>\n        <hr>\n    </div>\n    <div>\n        <input name=\"newRoomName\" id=\"newRoomName\" type=\"text\" value.bind=\"newRoomName\">\n        <button type=\"button\" click.delegate=\"addRoom()\">Add Room</button>\n    </div>\n    <div>\n        <button type=\"button\" click.delegate=\"removeHome()\">DELETE</button>\n    </div>\n    <hr>\n    <div>${message}</div>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
 define('text!login/login.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div>\n        <form role=\"form\" submit.delegate=\"login()\">\n            <div>\n                <div>\n                    <label for=\"userName\">User Name</label>\n                    <input name=\"userName\" id=\"userName\" type=\"text\" value.bind=\"userName\">\n                </div>\n            </div>\n            <div>\n                <div>\n                    <label for=\"password\">Password</label>\n                    <input name=\"password\" id=\"password\" type=\"password\" value.bind=\"password\">\n                </div>\n            </div>\n            <div>\n                <button type=\"submit\">Login</button>\n            </div>\n        </form>\n        <div class=\"alert alert-danger\" if.bind=\"error\">${error}</div>\n    </div>\n</template>\n"; });
 define('text!logout/logout.html', ['module'], function(module) { module.exports = "<!-- Aurelia expects a template for each route.\nWe don't actuall need a template for logging out, \nbut we provide an empty one to not get any errors -->\n<template></template>"; });
 define('text!nav-bar/nav-bar.html', ['module'], function(module) { module.exports = "<template>\n    <ul if.bind=\"!isAuthenticated\" class=\"nav navbar-nav navbar-right\">\n        <li><a route-href=\"route: login\">Login</a></li>\n    </ul>\n    <ul if.bind=\"isAuthenticated\" class=\"nav navbar-nav navbar-right\">\n        <li><a route-href=\"route: logout\">Logout</a></li>\n    </ul>\n</template>\n"; });

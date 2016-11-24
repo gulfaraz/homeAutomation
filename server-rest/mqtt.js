@@ -37,7 +37,7 @@ module.exports = function (mqttConfiguration) {
             console.log("Published : ", message, " - Client : ", (client ? client.id : "None"), " - Topic : " + packet.topic);
         });
 
-        var messageTopics = [ "Control", "State", "Acknowledgement" ];
+        var messageTopics = [ "Control", "State", "Acknowledgement", "Pair" ];
         var functionPostfix = "Broadcast";
 
         for(var messageTopicIndex in messageTopics) {
