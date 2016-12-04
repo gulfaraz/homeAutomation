@@ -81,8 +81,12 @@ module.exports = function (Home, mqttServer) {
                 callback(err || "Terminal (" + homeId + "/" + roomId + "/" + terminalId + ") is unavailable");
             } else {
                 var terminal = home.rooms.id(roomId).terminals.id(terminalId);
-                terminal.linked = true;
-                home.save(callback);
+                if(terminal) {
+                    terminal.linked = true;
+                    home.save(callback);
+                } else {
+                    callback("Terminal Not Found");
+                }
             }
         });
     }

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>homeAutomation - Setup New Device</title>
+    </head>
+    <body ng-app="app" ng-cloak>
+        <div class="app-container" ng-controller="AppCtrl">
+            <h1>homeAutomation</h1>
+            <h3>{{title}}</h3>
+            <div ui-view class="view-container"></div>
+        </div>
+    </body>
+    <script>
+        require("../javascripts/libraries.js");
+        require("../javascripts/scripts.js");
+        require("electron-connect").client.create();
+    </script>
+</html>
