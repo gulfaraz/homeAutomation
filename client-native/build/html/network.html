@@ -1,0 +1,45 @@
+<div>
+    <h3>Set Home Network</h3>
+    <div class="home-network">
+        <div>
+            <div ng-show="credentials.ssid">
+                {{credentials.ssid}} is set as your HOME network.
+            </div>
+            <div ng-hide="credentials.ssid">
+                Please set your HOME network to proceed.
+            </div>
+            <div>
+                <button type="button" ui-sref="home">Back</button>
+                <button type="button" ng-click="changeNetwork()" ng-hide="showNetworkList">{{ credentials.ssid ? "Change" : "Set" }} HOME Network</button>
+                <button type="button" ng-click="showNetworkList = false" ng-show="showNetworkList">Cancel</button>
+                <button type="button" ui-sref="device" ng-show="credentials.ssid">Next</button>
+            </div>
+        </div>
+    </div>
+    <div class="networks-list" ng-show="showNetworkList">
+        <div class="network-scan-status">
+            <div ng-show="networks">{{networks.length}} Network{{ (networks.length > 1) ? "s" : "" }} Found</div>
+            <div ng-show="scanning">Scanning for WiFi networks...</div>
+            <div ng-hide="scanning">
+                <button type="button" ng-click="scanNetworks()">Scan</button>
+            </div>
+        </div>
+        <div class="network" ng-repeat="network in networks" ng-show="networks.length">
+            <div class="network-security">{{network.security}}</div>
+            <div class="network-name">{{network.ssid}}</div>
+            <div class="network-strength">{{network.signal_level}}</div>
+            <div class="network-connect-button-container" ng-hide="network.ssid === getPassword">
+                <button type="button" class="network-connect-button" ng-click="selectNetwork(network)">Set</button>
+            </div>
+            <div class="network-password-dialog" ng-show="network.ssid === getPassword">
+                <label>Password</label>
+                <input type="password" ng-model="password" />
+                <div>{{connectMessage}}</div>
+                <div>
+                    <button type="button" ng-click="selectNetwork(network, password)">Set</button>
+                </div>
+            </div>
+        </div>
+        <div class="network-scan-message" ng-hide="networks.length">{{scanMessage}}</div>
+    </div>
+</div>

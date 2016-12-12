@@ -1,0 +1,30 @@
+<div>
+    <h3>Connect Device</h3>
+    <div class="networks-list">
+        <div class="network-scan-status">
+            <div ng-show="devices">{{devices.length}} Device{{ (devices.length > 1) ? "s" : "" }} Found</div>
+            <div ng-show="scanning">Scanning for Device networks...</div>
+            <div ng-hide="scanning">
+                <button type="button" ui-sref="network">Back</button>
+                <button type="button" ng-click="scanDevices()">Scan for devices</button>
+            </div>
+        </div>
+        <div class="network" ng-repeat="network in devices" ng-show="devices.length">
+            <div class="network-security">{{network.security}}</div>
+            <div class="network-name">{{network.ssid}}</div>
+            <div class="network-strength">{{network.signal_level}}</div>
+            <div class="network-connect-button-container" ng-hide="network.ssid === getPassword">
+                <button type="button" class="network-connect-button" ng-click="connectDevice(network)">Connect</button>
+            </div>
+            <div class="network-password-dialog" ng-show="network.ssid === getPassword">
+                <label>Password</label>
+                <input type="password" ng-model="password" />
+                <div>{{connectMessage}}</div>
+                <div>
+                    <button type="button" ng-click="connectDevice(network, password)">Connect</button>
+                </div>
+            </div>
+        </div>
+        <div class="network-scan-message" ng-hide="devices.length">{{scanMessage}}</div>
+    </div>
+</div>

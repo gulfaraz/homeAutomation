@@ -1,96 +1,33 @@
 <div>
     <h3>Link Terminals</h3>
-    <div class="home-network">
+    <div ng-show="message">
+        <div>{{message}}</div>
+    </div>
+    <div ng-hide="message">
+        <div class="switch-list">
+            <div class="switch" ng-repeat="switch in switchList">
+                <div class="switch-index">{{$index}}</div>
+                <div class="switch-test-button-container">
+                    <button type="button" class="switch-test-button" ng-click="toggleSwitch($index)">Test</button>
+                </div>
+                <div>
+                    <select ng-model="deviceIdList[$index]" required="true" ng-options="[terminal.homeId, terminal.roomId, terminal.terminalId] as terminal.terminalName for terminal in terminalList">
+                        <option value="">Unattached</option>
+                    </select>
+                </div>
+                <div>
+                    <div>{{getTerminalType(deviceIdList[$index][2])}}</div>
+                </div>
+                <div>
+                    <div>{{deviceIdList[$index]}}</div>
+                </div>
+            </div>
+        </div>
         <div>
-            <div ng-show="homeNetwork.isSet">
-                {{homeNetwork.credentials.ssid}} is set as your HOME network.
-            </div>
-            <div ng-hide="homeNetwork.isSet">
-                Please set your HOME network.
-            </div>
-            <div>
-                <button type="button" class="set-home-network-button" ng-click="homeNetwork.set()">{{ homeNetwork.isSet ? "Change" : "Set" }} HOME Network</button>
-            </div>
+            <button type="button" ng-click="setupDevice(homeCredentials, deviceIdList)">Save</button>
         </div>
     </div>
-    <div class="networks-list" ng-show="homeNetwork.configuring">
-        <div class="network-scan-status">
-            <div ng-show="networks">{{networks.length}} Networks Found</div>
-            <div ng-show="scanning">Scanning for WiFi networks...</div>
-            <div ng-hide="scanning">
-                <button type="button" ng-click="scanNetworks()">Scan</button>
-            </div>
-        </div>
-        <div class="network" ng-repeat="network in networks" ng-show="networks.length">
-            <div class="network-security">{{network.security}}</div>
-            <div class="network-name">{{network.ssid}}</div>
-            <div class="network-strength">{{network.signal_level}}</div>
-            <div class="network-connect-button-container" ng-hide="network.ssid === getPassword">
-                <button type="button" class="network-connect-button" ng-click="connectNetwork(network, null, setHomeNetworkCallback)">Set</button>
-            </div>
-            <div class="network-password-dialog" ng-show="network.ssid === getPassword">
-                <label>Password</label>
-                <input type="password" ng-model="password" />
-                <div>{{connectMessage}}</div>
-                <div>
-                    <button type="button" ng-click="connectNetwork(network, password, setHomeNetworkCallback)">Set</button>
-                </div>
-            </div>
-        </div>
-        <div class="network-scan-message" ng-hide="networks.length">{{scanMessage}}</div>
-    </div>
-    <div ng-show="linking">
-        <div>{{linkMessage}}</div>
-        <button type="button" ng-show="closeLinkModal" ng-click="closeLinking()">Done</button>
-    </div>
-    <div ng-show="homeNetwork.isSet">
-    <div class="terminals-list" ng-hide="configuring">
-        <div class="terminal" ng-repeat="terminal in terminals">
-            <div class="terminal-type">{{terminal.type}}</div>
-            <div class="terminal-name">{{terminal.terminalName}}</div>
-            <div class="terminal-configure-button-container">
-                <button type="button" class="terminal-configure-button" ng-click="configureTerminal(terminal)">Configure</button>
-            </div>
-        </div>
-    </div>
-    <div class="networks-list" ng-show="configuring">
-        <div class="selected-terminal">
-            <div class="terminal">
-                <div class="terminal-type">{{selectedTerminal.type}}</div>
-                <div class="terminal-name">{{selectedTerminal.terminalName}}</div>
-                <div class="terminal-change-button-container">
-                    <button type="button" class="terminal-change-button" ng-click="changeTerminal()">Change</button>
-                </div>
-            </div>
-        </div>
-        <div class="network-scan-status">
-            <div ng-show="networks">{{networks.length}} Networks Found</div>
-            <div ng-show="scanning">Scanning for WiFi networks...</div>
-            <div ng-hide="scanning">
-                <button type="button" ng-click="scanNetworks()">Scan</button>
-            </div>
-        </div>
-        <div class="network" ng-repeat="network in networks" ng-show="networks.length">
-            <div class="network-security">{{network.security}}</div>
-            <div class="network-name">{{network.ssid}}</div>
-            <div class="network-strength">{{network.signal_level}}</div>
-            <div class="network-connect-button-container" ng-hide="network.ssid === getPassword">
-                <button type="button" class="network-connect-button" ng-click="connectNetwork(network, null, configureTerminalCallback)">Connect</button>
-            </div>
-            <div class="network-password-dialog" ng-show="network.ssid === getPassword">
-                <label>Password</label>
-                <input type="password" ng-model="password" />
-                <div>{{connectMessage}}</div>
-                <div>
-                    <button type="button" ng-click="connectNetwork(network, password, configureTerminalCallback)">Connect</button>
-                </div>
-            </div>
-        </div>
-        <div class="network-scan-message" ng-hide="networks.length">{{scanMessage}}</div>
-    </div>
-    <div ng-show="linking">
-        <div>{{linkMessage}}</div>
-        <button type="button" ng-show="closeLinkModal" ng-click="closeLinking()">Done</button>
-    </div>
+    <div>
+        <button type="button" ui-sref="device">Back</button>
     </div>
 </div>

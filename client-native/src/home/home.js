@@ -18,9 +18,11 @@
                 terminalService.fetchTerminals(credentials).then(function (response) {
                     if(response.data.terminals.length) {
                         terminalService.setTerminals(response.data.terminals);
-                        state.go("manage");
+                        state.go("network");
+                    } else {
+                        scope.message = "No Terminals Available";
                     }
-                }).finally(function (response) {
+                }, function (response) {
                     scope.message = response.data.message;
                 });
             };

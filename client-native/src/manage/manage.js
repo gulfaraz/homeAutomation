@@ -4,149 +4,55 @@
             urlRouterProvider.otherwise("/");
             stateProvider
                 .state("manage", {
-                    url: "/",
+                    url: "/manage",
                     templateUrl: "manage.html",
                     controller: "ManageCtrl"
                 });
         }])
-        .controller("ManageCtrl", [ "$scope", "TerminalService", "$timeout", function (scope, terminalService, timeout) {
+        .controller("ManageCtrl", [ "$scope", "TerminalService", "NetworkService", "$timeout", "$state", function (scope, terminalService, networkService, timeout, state) {
 
-            var WiFiControl = require("wifi-control");
+            scope.terminalList = terminalService.getTerminals();
+            if(scope.terminalList.length === 0) {
+                alert("You do not have any terminals to configure");
+                state.go("home");
+            }
 
-            WiFiControl.init();
+            scope.homeCredentials = networkService.getCredentials();
 
-            scope.terminals = terminalService.getTerminals();
-            scope.scanMessage = "Looking for networks...";
+            scope.deviceIdList = [];
 
-            scope.selectedTerminal = null;
+            scope.switchList = [];
 
-            scope.homeNetwork = {
-                "isSet" : false,
-                "configuring" : false,
-                "credentials" : {
-                    "ssid" : null,
-                    "password" : null
-                },
-                "set" : function () {
-                    this.configuring = true;
-                    scope.scanNetworks();
-                }
-            };
+            terminalService.getDeviceConfiguration().then(function (response) {
+                scope.switchList.length = response.data.switchCount;
+            }, function (response) {
+                scope.message = "Please check if you have connected to the correct device";
+            });
 
-            scope.configureTerminal = function (terminal) {
-                scope.configuring = true;
-                scope.selectedTerminal = terminal;
-                scope.scanNetworks();
-            };
-
-            scope.changeTerminal = function (terminal) {
-                scope.configuring = false;
-                scope.selectedTerminal = null;
-                scope.scanning = false;
-                scope.networks = null;
-                scope.scanMessage = "Looking for networks...";
-            };
-
-            scope.scanNetworks = function () {
-                scope.scanning = true;
-                WiFiControl.scanForWiFi(function (err, response) {
-                    if(err) {
-                        console.error(err);
+            scope.getTerminalType = function (terminalId) {
+                var type = null;
+                for(var terminalIndex in scope.terminalList) {
+                    var terminal = scope.terminalList[terminalIndex];
+                    if(terminal.terminalId === terminalId) {
+                        type = terminal.type;
+                        break;
                     }
-                    timeout(function () {
-                        scope.scanning = false;
-                        scope.networks = response.networks;
-                        scope.scanMessage = "No Networks Found";
-                    });
-                });
-            };
-
-            scope.connectNetwork = function (network, password, callback) {
-                scope.connectMessage = null;
-
-                if(network.security === "Open" || password || (network.ssid === scope.getPassword)) {
-
-                    if(network.security === "Open" || password) {
-
-                        var networkCredentials = {
-                            "ssid" : network.ssid,
-                            "password" : password
-                        };
-
-                        WiFiControl.connectToAP(networkCredentials, function (err, response) {
-                            if(err) {
-                                console.error(err);
-                            }
-                            timeout(function () {
-                                var interfaceState = WiFiControl.getIfaceState();
-                                if(response.success && (interfaceState.ssid === network.ssid)) {
-                                    callback(network, password);
-                                } else {
-                                    scope.connectMessage = "Failed to connect to " + (network.ssid || "network");
-                                }
-                            });
-                        });
-                    } else {
-                        scope.connectMessage = "Enter network password";
-                    }
-                } else {
-                    scope.getPassword = network.ssid;
                 }
+                return type;
             };
 
-            scope.configureTerminalCallback = function () {
-                scope.getPassword = null;
-                scope.connectMessage = null;
-                scope.linking = true;
-                scope.closeLinkModal = false;
-                scope.linkMessage = "Linking device to terminal...";
-                var deviceId = [ scope.selectedTerminal.homeId, scope.selectedTerminal.roomId, scope.selectedTerminal.terminalId ];
-                terminalService.configureTerminal(scope.homeNetwork.credentials, deviceId).then(function (response) {
+            scope.setupDevice = function (homeCredentials, deviceIdList) {
+                for(var deviceIdIndex=0,len=scope.switchList.length; deviceIdIndex<len; deviceIdIndex++) {
+                    var deviceId = deviceIdList[deviceIdIndex];
+                    if(!deviceId) {
+                        deviceIdList[deviceIdIndex] = [ "", "", "" ];
+                    }
+                }
+                terminalService.configureDevice(homeCredentials, deviceIdList).then(function (response) {
                     console.log("Configuration Success");
                 }, function (response) {
                     console.log("Configuration Failed");
-                }).finally(function (response) {
-                    var message = "Success/Failure in link";
-                    if(!response) {
-                        message = "Please check if you've connected to the correct network";
-                    } else {
-                        if(response.data && response.data.message) {
-                            message = response.data.message;
-                        }
-                    }
-                    scope.linkMessage = message;
-                    scope.closeLinkModal = true;
-
-
-                        WiFiControl.connectToAP(networkCredentials, function (err, response) {
-                            if(err) {
-                                console.error(err);
-                            }
-                            timeout(function () {
-                                var interfaceState = WiFiControl.getIfaceState();
-                                if(response.success && (interfaceState.ssid === network.ssid)) {
-                                    callback(network, password);
-                                } else {
-                                    scope.connectMessage = "Failed to connect to " + (network.ssid || "network");
-                                }
-                            });
-                        });
                 });
-            };
-
-            scope.setHomeNetworkCallback = function (network, password) {
-                scope.getPassword = null;
-                scope.connectMessage = null;
-                scope.homeNetwork.credentials = {
-                    "ssid" : network.ssid,
-                    "password" : password
-                };
-                scope.homeNetwork.isSet = true;
-                scope.homeNetwork.configuring = false;
-            };
-
-            scope.closeLinking = function (response) {
-                scope.linking = false;
             };
         }]);
 })();
