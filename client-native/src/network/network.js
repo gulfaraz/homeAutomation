@@ -13,7 +13,7 @@
 
             scope.scanMessage = "Looking for networks...";
 
-            scope.credentials = { ssid: "gulfaraz", password: "7829782782" };//networkService.getCredentials();
+            scope.credentials = networkService.getCredentials();
 
             scope.changeNetwork = function () {
                 scope.showNetworkList = true;

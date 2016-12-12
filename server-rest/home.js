@@ -5,7 +5,7 @@ module.exports = function (Home, mqttServer) {
     }
 
     function getHome(homeId, callback) {
-        var home = getHome(homeId);
+        var home = getHomeById(homeId);
         if(home) {
             home.exec(callback);
         } else {
@@ -22,7 +22,7 @@ module.exports = function (Home, mqttServer) {
     }
 
     function removeHome(homeId, callback) {
-        var home = getHome(homeId);
+        var home = getHomeById(homeId);
         if(home) {
             home.remove(callback);
         } else {
@@ -38,7 +38,7 @@ module.exports = function (Home, mqttServer) {
         }
     }
 
-    function getHome(homeId) {
+    function getHomeById(homeId) {
         var home = null;
         var foundHome = Home.findById(homeId);
         if(foundHome) {
