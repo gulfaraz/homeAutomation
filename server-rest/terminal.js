@@ -21,8 +21,13 @@ module.exports = function (Home, mqttServer) {
             if(err || !home) {
                 callback(err || "Home Not Found");
             } else {
-                home.rooms.id(roomId).terminals.id(terminalId).remove();
-                home.save(callback);
+                var terminal = getTerminal(home, roomId, terminalId);
+                if(terminal) {
+                    terminal.remove();
+                    home.save(callback);
+                } else {
+                    callback("Terminal Not Found");
+                }
             }
         });
     }
@@ -44,18 +49,22 @@ module.exports = function (Home, mqttServer) {
             if(err || !home) {
                 callback(err || "Terminal (" + homeId + "/" + roomId + "/" + terminalId + ") is unavailable");
             } else {
-                var terminal = home.rooms.id(roomId).terminals.id(terminalId);
-                if(state === "toggle") {
-                    terminal.state = !terminal.state;
-                } else if(state === "on" || state === "off") {
-                    terminal.state = ((state === "on") ? true : false);
+                var terminal = getTerminal(home, roomId, terminalId);
+                if(terminal) {
+                    if(state === "toggle") {
+                        terminal.state = !terminal.state;
+                    } else if(state === "on" || state === "off") {
+                        terminal.state = ((state === "on") ? true : false);
+                    } else {
+                        callback("Invalid Terminal State");
+                    }
+                    if(state === "toggle" || state === "on" || state === "off") {
+                        mqttServer.controlBroadcast(terminalId, (terminal.state ? "on" : "off"));
+                    }
+                    home.save(callback);
                 } else {
-                    callback("Invalid Terminal State");
+                    callback("Terminal Not Found");
                 }
-                if(state === "toggle" || state === "on" || state === "off") {
-                    mqttServer.controlBroadcast(terminalId, (terminal.state ? "on" : "off"));
-                }
-                home.save(callback);
             }
         });
     }
@@ -80,7 +89,7 @@ module.exports = function (Home, mqttServer) {
             if(err || !home) {
                 callback(err || "Terminal (" + homeId + "/" + roomId + "/" + terminalId + ") is unavailable");
             } else {
-                var terminal = home.rooms.id(roomId).terminals.id(terminalId);
+                var terminal = getTerminal(home, roomId, terminalId);
                 if(terminal) {
                     terminal.linked = true;
                     home.save(callback);
@@ -96,12 +105,27 @@ module.exports = function (Home, mqttServer) {
             if(err || !home) {
                 callback(err || "Terminal (" + homeId + "/" + roomId + "/" + terminalId + ") is unavailable");
             } else {
-                var terminal = home.rooms.id(roomId).terminals.id(terminalId);
-                terminal.linked = false;
-                mqttServer.pairBroadcast(terminalId, false);
-                home.save(callback);
+                var terminal = getTerminal(home, roomId, terminalId);
+                if(terminal) {
+                    terminal.linked = false;
+                    mqttServer.pairBroadcast(terminalId, false);
+                    home.save(callback);
+                } else {
+                    callback("Terminal Not Found");
+                }
             }
         });
+    }
+
+    function getTerminal(home, roomId, terminalId) {
+        var terminal = null;
+        if(home) {
+            var room = home.rooms.id(roomId);
+            if(room) {
+                terminal = room.terminals.id(terminalId);
+            }
+        }
+        return terminal;
     }
 
     return {

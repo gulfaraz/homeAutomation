@@ -13,8 +13,13 @@ module.exports = function (Home, mqttServer) {
 
     function removeRoom(homeId, roomId, callback) {
         Home.findById(homeId).exec(function (err, home) {
-            home.rooms.id(roomId).remove();
-            home.save(callback);
+            var room = getRoom(home, roomId);
+            if(room) {
+                room.remove();
+                home.save(callback);
+            } else {
+                callback("Room Not Found");
+            }
         });
     }
 
@@ -24,6 +29,14 @@ module.exports = function (Home, mqttServer) {
         } else {
             callback("roomName is missing");
         }
+    }
+
+    function getRoom(home, roomId) {
+        var room = null;
+        if(home) {
+            room = home.rooms.id(roomId);
+        }
+        return room;
     }
 
     return {

@@ -5,7 +5,12 @@ module.exports = function (Home, mqttServer) {
     }
 
     function getHome(homeId, callback) {
-        Home.findById(homeId).exec(callback);
+        var home = getHome(homeId);
+        if(home) {
+            home.exec(callback);
+        } else {
+            callback("Home Not Found");
+        }
     }
 
     function addHome(homeObject, callback) {
@@ -17,7 +22,12 @@ module.exports = function (Home, mqttServer) {
     }
 
     function removeHome(homeId, callback) {
-        Home.findById(homeId).remove(callback);
+        var home = getHome(homeId);
+        if(home) {
+            home.remove(callback);
+        } else {
+            callback("Home Not Found");
+        }
     }
 
     function validateHome(homeObject, callback) {
@@ -26,6 +36,15 @@ module.exports = function (Home, mqttServer) {
         } else {
             callback("homeName is missing");
         }
+    }
+
+    function getHome(homeId) {
+        var home = null;
+        var foundHome = Home.findById(homeId);
+        if(foundHome) {
+            home = foundHome;
+        }
+        return home;
     }
 
     return {

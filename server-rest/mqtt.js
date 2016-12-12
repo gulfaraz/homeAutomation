@@ -44,21 +44,21 @@ module.exports = function (mqttConfiguration) {
             var messageTopic = messageTopics[messageTopicIndex];
 
             mqttServer[messageTopic.toLowerCase() + functionPostfix] = (function (messageTopic) {
-
                 return (function (terminalId, message, qos, retain) {
-
-                    var packet = {
-                        "topic" : messageTopic + "/" + terminalId,
-                        "payload" : message,
-                        "qos" : qos || 1,
-                        "retain": !!retain
-                    };
-
-                    mqttServer.publish(packet, function () {
-                        console.log(messageTopic + " Message Sent");
-                    });
+                    if(terminalId) {
+                        var packet = {
+                            "topic" : messageTopic + "/" + terminalId,
+                            "payload" : message,
+                            "qos" : qos || 1,
+                            "retain": !!retain
+                        };
+                        mqttServer.publish(packet, function () {
+                            console.log(messageTopic + " Message Sent");
+                        });
+                    } else {
+                        console.error("Failed to send message - terminalId not found");
+                    }
                 });
-
             })(messageTopic);
         }
 
