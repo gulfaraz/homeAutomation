@@ -13,9 +13,15 @@ module.exports = function (mqttConfiguration) {
             "mongo" : {}
         };
 
+        var persistenceSettings = {
+            "factory" : mosca.persistence.Mongo,
+            "url" : mqttURI
+        };
+
         var mqttServerSettings = {
             "port" : mqttConfiguration.port,
-            "backend" : ascoltatore
+            "backend" : ascoltatore,
+            "persistence" : persistenceSettings
         };
 
         var mqttServer = new mosca.Server(mqttServerSettings);

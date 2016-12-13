@@ -62,7 +62,7 @@ var configuration = (function (switchCount, flash) {
     configuration.home = loadHomeCredentials();
 
     configuration.mqtt = {
-        host: "10.244.119.170",
+        host: "10.244.214.50",
         port: 1883,
         keepAlive: 60
     };
@@ -119,9 +119,7 @@ var configuration = (function (switchCount, flash) {
 
     function startNetwork(functionName, credentials, callback) {
         wifi.stopAP();
-        console.log(functionName);
         console.log(credentials);
-        console.log(callback);
         wifi[functionName](credentials.ssid, { "password" : credentials.password }, function (error) {
             if(!error) {
                 callback();
@@ -200,6 +198,9 @@ var configuration = (function (switchCount, flash) {
                     removeDeviceId(switchIndex);
                 }
             }
+        });
+        mqttClient.on("disconnected", function () {
+            mqttClient.connect();
         });
         mqttClient.connect({
             port: mqttConfiguration.port,

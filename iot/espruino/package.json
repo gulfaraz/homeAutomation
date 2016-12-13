@@ -1,0 +1,31 @@
+{
+  "name": "espruino",
+  "version": "1.0.0",
+  "description": "ESP8266 code for homeAutomation",
+  "main": "espruino.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "home",
+    "automation",
+    "esp8266",
+    "espruino",
+    "wifi",
+    "mqtt",
+    "iot",
+    "gulfaraz",
+    "yasin"
+  ],
+  "author": "Gulfaraz Yasin",
+  "license": "MIT",
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "gulp-jshint": "^2.0.4",
+    "gulp-load-plugins": "^1.4.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^2.0.0",
+    "gulp-util": "^3.0.7",
+    "jshint": "^2.9.4"
+  }
+}
