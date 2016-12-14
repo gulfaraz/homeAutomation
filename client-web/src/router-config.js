@@ -48,6 +48,12 @@ export default class {
                     name: 'logout',
                     moduleId: 'logout/logout',
                     title: 'Logout'
+                },
+                {
+                    route: 'device',
+                    name: 'device',
+                    moduleId: 'device/device',
+                    title: 'Device'
                 }
             ]);
         };

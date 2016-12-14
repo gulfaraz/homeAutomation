@@ -154,6 +154,11 @@ var configuration = (function (switchCount, flash) {
         }
 
         var mqttClient = tinyMQTT.create(mqttConfiguration.host);
+
+        function publishState(deviceIdString, switchIndex) {
+            mqttClient.publish("State/" + deviceIdString, (digitalRead(switchList[switchIndex]) === 1) ? "on" : "off");
+        }
+
         mqttClient.on("connected", function () {
             for(var deviceIdIndex in deviceIdList) {
                 var deviceId = deviceIdList[deviceIdIndex];
@@ -177,9 +182,12 @@ var configuration = (function (switchCount, flash) {
                         state = constant.state[message];
                     }
                     digitalWrite(switchList[switchIndex], state);
+                    publishState(deviceIdString, switchIndex);
                 } else if(topic === "Acknowledgement") {
                     if(message === "failed") {
                         removeDeviceId(switchIndex);
+                    } else if (message === "state") {
+                        publishState(deviceIdString, switchIndex);
                     }
                 }
             }

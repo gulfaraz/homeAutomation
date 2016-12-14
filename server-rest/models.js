@@ -47,7 +47,10 @@ module.exports = function () {
         "state" : { "type" : Boolean, "default" : true },
         "linked" : { "type" : Boolean, "default" : false },
         "created" : { "type" : Date, "default" : Date.now },
-        "edited" : { "type" : Date, "default" : Date.now }
+        "edited" : { "type" : Date, "default" : Date.now },
+        "lastControlTime" : { "type" : Date, "default" : Date.now },
+        "lastStateTime" : { "type" : Date, "default" : Date.now },
+        "synced" : { "type" : Boolean, "default" : false }
     });
 
     var RoomSchema = new Schema({

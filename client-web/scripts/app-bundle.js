@@ -234,6 +234,11 @@ define('router-config',['exports', 'aurelia-auth', 'aurelia-framework', 'aurelia
                     name: 'logout',
                     moduleId: 'logout/logout',
                     title: 'Logout'
+                }, {
+                    route: 'device',
+                    name: 'device',
+                    moduleId: 'device/device',
+                    title: 'Device'
                 }]);
             };
 
@@ -457,11 +462,11 @@ define('home/viewHome',['exports', 'aurelia-framework', 'aurelia-router', '../ht
             });
         };
 
-        viewHome.prototype.removeTerminal = function removeTerminal(roomId, terminalId) {
+        viewHome.prototype.refreshTerminal = function refreshTerminal(roomId, terminalId) {
             var _this7 = this;
 
-            this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId, {
-                method: "DELETE"
+            this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId + "/refresh", {
+                method: "GET"
             }).then(function (response) {
                 return response.json();
             }).then(function (data) {
@@ -472,17 +477,32 @@ define('home/viewHome',['exports', 'aurelia-framework', 'aurelia-router', '../ht
             });
         };
 
-        viewHome.prototype.setTerminalState = function setTerminalState(roomId, terminalId, state) {
+        viewHome.prototype.removeTerminal = function removeTerminal(roomId, terminalId) {
             var _this8 = this;
 
-            this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId + "/" + state, {
-                method: "GET"
+            this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId, {
+                method: "DELETE"
             }).then(function (response) {
                 return response.json();
             }).then(function (data) {
                 _this8.message = data.message;
                 if (data.home) {
                     _this8.home = data.home;
+                }
+            });
+        };
+
+        viewHome.prototype.setTerminalState = function setTerminalState(roomId, terminalId, state) {
+            var _this9 = this;
+
+            this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId + "/" + state, {
+                method: "GET"
+            }).then(function (response) {
+                return response.json();
+            }).then(function (data) {
+                _this9.message = data.message;
+                if (data.home) {
+                    _this9.home = data.home;
                 }
             });
         };
@@ -2002,11 +2022,71 @@ define('aurelia-auth/auth-filter',["exports"], function (exports) {
     return AuthFilterValueConverter;
   }();
 });
+define('device/home',['exports', 'aurelia-framework', '../http'], function (exports, _aureliaFramework, _http) {
+    'use strict';
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    exports.Home = undefined;
+
+    function _classCallCheck(instance, Constructor) {
+        if (!(instance instanceof Constructor)) {
+            throw new TypeError("Cannot call a class as a function");
+        }
+    }
+
+    var _dec, _class;
+
+    var Home = exports.Home = (_dec = (0, _aureliaFramework.inject)(_http.CustomHttpClient), _dec(_class = function () {
+        function Home(http) {
+            _classCallCheck(this, Home);
+
+            this.title = "Choose your home";
+
+            this.http = http;
+        }
+
+        Home.prototype.activate = function activate() {
+            var _this = this;
+
+            this.http.fetch("/home").then(function (response) {
+                return response.json();
+            }).then(function (data) {
+                _this.homes = data.home;
+            });
+        };
+
+        return Home;
+    }()) || _class);
+});
+define('device/device',["exports", "aurelia-framework"], function (exports, _aureliaFramework) {
+    "use strict";
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    exports.Home = undefined;
+
+    function _classCallCheck(instance, Constructor) {
+        if (!(instance instanceof Constructor)) {
+            throw new TypeError("Cannot call a class as a function");
+        }
+    }
+
+    var Home = exports.Home = function Home() {
+        _classCallCheck(this, Home);
+
+        this.title = "Configure your HomeConnect device";
+    };
+});
 define('text!app.html', ['module'], function(module) { module.exports = "<template>\n    <require from='nav-bar/nav-bar'></require>\n    <nav-bar router.bind=\"router\"></nav-bar>\n    <div class=\"container\">\n        <router-view></router-view>\n    </div>\n</template>\n"; });
 define('text!home/home.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div repeat.for=\"home of homes\">\n        <a route-href=\"route: viewHome; params.bind: { homeId: home._id }\" title=\"View Home\">${home.homeName}</a>\n    </div>\n    <hr>\n    <a route-href=\"route: newHome\" title=\"Add A Home\">Add HOME</a>\n</template>\n"; });
 define('text!home/newHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <form role=\"form\" submit.delegate=\"add()\">\n        <div>\n            <div>\n                <label for=\"homeName\">Home Name</label>\n                <input name=\"homeName\" id=\"homeName\" type=\"text\" value.bind=\"homeName\">\n            </div>\n        </div>\n        <div>\n            <div>\n                <label for=\"address\">Address</label>\n                <input name=\"address\" id=\"address\" type=\"text\" value.bind=\"address\">\n            </div>\n        </div>\n        <div>\n            <button type=\"submit\">Add</button>\n        </div>\n    </form>\n    <hr>\n    <div>${message}</div>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
-define('text!home/viewHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${home.homeName}</h1>\n    <div>${home.address}</div>\n    <div repeat.for=\"room of home.rooms\">\n        <div>${room.roomName}</div>\n        <div repeat.for=\"terminal of room.terminals\">\n            <div>${terminal.terminalName}</div>\n            <div>${terminal.type}</div>\n            <div>${terminal.state}</div>\n            <div>\n                <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'toggle')\">Toggle</button>\n                <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'on')\" if.bind=\"!terminal.state\">On</button>\n                <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'off')\" if.bind=\"terminal.state\">Off</button>\n            </div>\n            <button type=\"button\" click.delegate=\"unlinkTerminal(room._id, terminal._id)\" if.bind=\"terminal.linked\">Unlink Device</button>\n            <button type=\"button\" click.delegate=\"removeTerminal(room._id, terminal._id)\">Remove Terminal</button>\n            <hr>\n        </div>\n        <div>\n            <div>\n                <input name=\"newTerminalName\" id=\"newTerminalName\" type=\"text\" value.bind=\"$parent.newTerminalName\">\n            </div>\n            <div>\n                <select name=\"newTerminalType\" id=\"newTerminalType\" value.bind=\"$parent.newTerminalType\">\n                    <option value=\"\">Select</option>\n                    <option value=\"light\">Light</option>\n                    <option value=\"fan\">Fan</option>\n                </select>\n            </div>\n            <div>\n                <button type=\"button\" click.delegate=\"addTerminal(room._id)\">Add Terminal</button>\n            </div>\n        </div>\n        <button type=\"button\" click.delegate=\"removeRoom(room._id)\">Remove Room</button>\n        <hr>\n    </div>\n    <div>\n        <input name=\"newRoomName\" id=\"newRoomName\" type=\"text\" value.bind=\"newRoomName\">\n        <button type=\"button\" click.delegate=\"addRoom()\">Add Room</button>\n    </div>\n    <div>\n        <button type=\"button\" click.delegate=\"removeHome()\">DELETE</button>\n    </div>\n    <hr>\n    <div>${message}</div>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
+define('text!home/viewHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${home.homeName}</h1>\n    <div>${home.address}</div>\n    <div repeat.for=\"room of home.rooms\">\n        <div>${room.roomName}</div>\n        <div repeat.for=\"terminal of room.terminals\">\n            <div>${terminal.terminalName}</div>\n            <div>${terminal.type}</div>\n            <div>${terminal.state}</div>\n            <div if.bind=\"terminal.linked\">\n                <div if.bind=\"terminal.synced\">\n                    <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'toggle')\">Toggle</button>\n                    <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'on')\" if.bind=\"!terminal.state\">On</button>\n                    <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'off')\" if.bind=\"terminal.state\">Off</button>\n                    <div>\n                        <button type=\"button\" click.delegate=\"unlinkTerminal(room._id, terminal._id)\">Unlink Device</button>\n                    </div>\n                </div>\n                <div if.bind=\"!terminal.synced\">\n                    <button type=\"button\" click.delegate=\"refreshTerminal(room._id, terminal._id)\">Refresh</button>\n                </div>\n            </div>\n            <div if.bind=\"!terminal.linked\">\n                <a route-href=\"route: device\" title=\"Link Device\">Link Device</a>\n            </div>\n            <button type=\"button\" click.delegate=\"removeTerminal(room._id, terminal._id)\">Remove Terminal</button>\n            <hr>\n        </div>\n        <div>\n            <div>\n                <input name=\"newTerminalName\" id=\"newTerminalName\" type=\"text\" value.bind=\"$parent.newTerminalName\">\n            </div>\n            <div>\n                <select name=\"newTerminalType\" id=\"newTerminalType\" value.bind=\"$parent.newTerminalType\">\n                    <option value=\"\">Select</option>\n                    <option value=\"light\">Light</option>\n                    <option value=\"fan\">Fan</option>\n                </select>\n            </div>\n            <div>\n                <button type=\"button\" click.delegate=\"addTerminal(room._id)\">Add Terminal</button>\n            </div>\n        </div>\n        <button type=\"button\" click.delegate=\"removeRoom(room._id)\">Remove Room</button>\n        <hr>\n    </div>\n    <div>\n        <input name=\"newRoomName\" id=\"newRoomName\" type=\"text\" value.bind=\"newRoomName\">\n        <button type=\"button\" click.delegate=\"addRoom()\">Add Room</button>\n    </div>\n    <div>\n        <button type=\"button\" click.delegate=\"removeHome()\">DELETE</button>\n    </div>\n    <hr>\n    <div>${message}</div>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
 define('text!logout/logout.html', ['module'], function(module) { module.exports = "<!-- Aurelia expects a template for each route.\nWe don't actuall need a template for logging out, \nbut we provide an empty one to not get any errors -->\n<template></template>"; });
 define('text!login/login.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div>\n        <form role=\"form\" submit.delegate=\"login()\">\n            <div>\n                <div>\n                    <label for=\"userName\">User Name</label>\n                    <input name=\"userName\" id=\"userName\" type=\"text\" value.bind=\"userName\">\n                </div>\n            </div>\n            <div>\n                <div>\n                    <label for=\"password\">Password</label>\n                    <input name=\"password\" id=\"password\" type=\"password\" value.bind=\"password\">\n                </div>\n            </div>\n            <div>\n                <button type=\"submit\">Login</button>\n            </div>\n        </form>\n        <div class=\"alert alert-danger\" if.bind=\"error\">${error}</div>\n    </div>\n</template>\n"; });
 define('text!nav-bar/nav-bar.html', ['module'], function(module) { module.exports = "<template>\n    <ul if.bind=\"!isAuthenticated\" class=\"nav navbar-nav navbar-right\">\n        <li><a route-href=\"route: login\">Login</a></li>\n    </ul>\n    <ul if.bind=\"isAuthenticated\" class=\"nav navbar-nav navbar-right\">\n        <li><a route-href=\"route: logout\">Logout</a></li>\n    </ul>\n</template>\n"; });
+define('text!device/home.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div repeat.for=\"home of homes\">\n        <a route-href=\"route: viewHome; params.bind: { homeId: home._id }\" title=\"View Home\">${home.homeName}</a>\n    </div>\n    <hr>\n    <a route-href=\"route: newHome\" title=\"Add A Home\">Add HOME</a>\n</template>\n"; });
+define('text!device/device.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <h4><a href=\"#\">Click here to download HomeConnect</a></h4>\n    <div>You will need to install HomeConnect to link your devices</div>\n    <div>The following are the steps required before you use HomeConnect</div>\n    <div>You can download the application while you do the following so you don't have to wait later</div>\n    <ol>\n        <li>Create your Home</li>\n        <li>Add Rooms to you Home</li>\n        <li>Add Lights, Fans and other end points in your Rooms</li>\n        <li>Download and install the HomeConnect application</li>\n        <li>Once installed, open the HomeConnect application</li>\n    </ol>\n    <div>Now that you have installed the HomeConnect application on your machine</div>\n    <div>The follow the below steps to link your devices to your HomeConnect account</div>\n    <ol>\n        <li>Sign in into the HomeConnect application using your HomeConnect account</li>\n        <li>Choose your HOME network, which will allow the devices to connect to the internet</li>\n        <ul>\n            <li>If you are prompted by your system to allow network modification access, grant the required access to connect to the device network</li>\n        </ul>\n        <li>Choose the device you wish to connect to using the password you received with the device</li>\n        <ul>\n            <li>In case you have lost the password, send us a mail at <a href=\"mailto:support@homeconnect.com\" target=\"_top\">support@homeconnect.com</a></li>\n        </ul>\n        <li>Select the end points you would like to connect the selected device to</li>\n        <li>Click SAVE</li>\n        <li>Sign into homeconnect.com and control your home</li>\n    </ol>\n    <p>Congratulations</p>\n    <div>We would like to know your experience with HomeConnect, while feedback/suggestions/queries are welcome we simply enjoy knowing that our product is useful to you and is a part of your home. So please spare a few minutes in writing to us at <a href=\"mailto:hi@homeconnect.com\" target=\"_top\">hi@homeconnect.com</a></div>\n    <hr>\n    <a route-href=\"route: home\" title=\"Go Home\">Home</a>\n</template>\n"; });
 //# sourceMappingURL=app-bundle.js.map
