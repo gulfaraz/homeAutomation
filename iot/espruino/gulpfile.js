@@ -3,12 +3,13 @@ var plugin = require("gulp-load-plugins")();
 
 gulp.task("hint", function() {
     return gulp.src("espruino.js")
-        .pipe(plugin.jshint({ multistr: true, laxcomma: true }))
+        .pipe(plugin.jshint({ multistr: true, laxcomma: true, esversion: 6 }))
         .pipe(plugin.jshint.reporter("default"));
 });
 
 gulp.task("script", [ "hint" ], function() {
     return gulp.src("espruino.js")
+        .pipe(plugin.babel({ presets: ["es2015"] }))
         .pipe(plugin.uglify().on("error", plugin.util.log))
         .pipe(gulp.dest("../../../iot/projects"))
         .pipe(plugin.rename("espruino.min.js"))

@@ -59,7 +59,7 @@ module.exports = function (Home, mqttServer) {
                         callback("Invalid Terminal State");
                     }
                     if(state === "toggle" || state === "on" || state === "off") {
-                        mqttServer.controlBroadcast(terminalId, (terminal.state ? "on" : "off"));
+                        mqttServer.controlBroadcast(homeId, roomId, terminalId, (terminal.state ? "on" : "off"));
                     }
                     home.save(callback);
                 } else {
@@ -69,20 +69,19 @@ module.exports = function (Home, mqttServer) {
         });
     }
 
-   mqttServer.on("published", function (packet, client) {
-       var message = (new String(packet.payload)).toString();
-       var [topic, terminalId] = packet.topic.split("/");
-       if(topic === "Pair") {
-           var [homeId, roomId] = message.split("/");
-           linkTerminal(homeId, roomId, terminalId, function (err, terminal) {
-               var acknowledgementMessage = "paired";
-               if(err) {
+    mqttServer.on("message", function (packet, client) {
+        var message = (new String(packet.payload)).toString();
+        var [topic, homeId, roomId, terminalId] = packet.topic.split("/");
+        if(topic === "Pair") {
+            linkTerminal(homeId, roomId, terminalId, function (err, terminal) {
+                var acknowledgementMessage = "paired";
+                if(err) {
                     acknowledgementMessage = "failed";
-               }
-               mqttServer.acknowledgementBroadcast(terminalId, acknowledgementMessage);
-           });
-       }
-   });
+                }
+                mqttServer.acknowledgementBroadcast(homeId, roomId, terminalId, acknowledgementMessage);
+            });
+        }
+    });
 
     function linkTerminal(homeId, roomId, terminalId, callback) {
         Home.findById(homeId).exec(function (err, home) {
@@ -108,7 +107,7 @@ module.exports = function (Home, mqttServer) {
                 var terminal = getTerminal(home, roomId, terminalId);
                 if(terminal) {
                     terminal.linked = false;
-                    mqttServer.pairBroadcast(terminalId, false);
+                    mqttServer.pairBroadcast(homeId, roomId, terminalId, false);
                     home.save(callback);
                 } else {
                     callback("Terminal Not Found");

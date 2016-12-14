@@ -9,11 +9,6 @@ var wifi = require("Wifi"),
             password: 1,
             deviceId: 2
         },
-        offset: {
-            homeId: 0,
-            roomId: 1,
-            terminalId: 2
-        },
         state: {
             on: 1,
             off: 0,
@@ -40,13 +35,8 @@ var configuration = (function (switchCount, flash) {
 
     function loadDeviceIdList() {
         var deviceIdList = [];
-        for(var deviceIdIndex=0; deviceIdIndex<switchCount; deviceIdIndex++) {
-            var indexOffset = (deviceIdIndex * constant.deviceIdLength) + constant.index.deviceId;
-            deviceIdList.push([
-                readIndex(indexOffset + constant.offset.homeId),
-                readIndex(indexOffset + constant.offset.roomId),
-                readIndex(indexOffset + constant.offset.terminalId)
-            ]);
+        for(var deviceIdIndex=constant.index.deviceId; deviceIdIndex<(switchCount+constant.index.deviceId); deviceIdIndex++) {
+            deviceIdList.push(readIndex(deviceIdIndex).split("/"));
         }
         return deviceIdList;
     }
@@ -62,7 +52,7 @@ var configuration = (function (switchCount, flash) {
     configuration.home = loadHomeCredentials();
 
     configuration.mqtt = {
-        host: "10.244.214.50",
+        host: "10.244.193.33",
         port: 1883,
         keepAlive: 60
     };
@@ -76,11 +66,8 @@ var configuration = (function (switchCount, flash) {
         flash.write(constant.index.ssid, homeCredentials.ssid);
         flash.write(constant.index.password, homeCredentials.password);
         for(var deviceIdIndex in deviceIdList) {
-            var indexOffset = (deviceIdIndex * constant.deviceIdLength) + constant.index.deviceId;
             var deviceId = deviceIdList[deviceIdIndex];
-            flash.write(indexOffset + constant.offset.homeId, deviceId[constant.offset.homeId]);
-            flash.write(indexOffset + constant.offset.roomId, deviceId[constant.offset.roomId]);
-            flash.write(indexOffset + constant.offset.terminalId, deviceId[constant.offset.terminalId]);
+            flash.write(constant.index.deviceId + deviceIdIndex, deviceId.join("/"));
         }
         this.home = homeCredentials;
         this.deviceIdList = deviceIdList;
@@ -152,6 +139,12 @@ var configuration = (function (switchCount, flash) {
         http.createServer(webServer).listen(80);
     }
 
+    function initializeSwitches() {
+        for(var switchIndex in switchList) {
+            pinMode(switchList[switchIndex], 'output');
+        }
+    }
+
     function connectToMQTTServer(mqttConfiguration, deviceIdList) {
 
         function removeDeviceId(index) {
@@ -160,42 +153,34 @@ var configuration = (function (switchCount, flash) {
             restartDevice();
         }
 
-        function findSwitchIndex(deviceIdList, terminalId) {
-            var switchIndex = -1;
-            for(var deviceIdIndex in deviceIdList) {
-                if(deviceIdList[deviceIdIndex][constant.offset.terminalId] == terminalId) {
-                    switchIndex = deviceIdIndex;
-                    break;
-                }
-            }
-            return switchIndex;
-        }
-
         var mqttClient = tinyMQTT.create(mqttConfiguration.host);
         mqttClient.on("connected", function () {
             for(var deviceIdIndex in deviceIdList) {
                 var deviceId = deviceIdList[deviceIdIndex];
-                if(deviceId[constant.offset.terminalId].length > 0) {
-                    mqttClient.subscribe("+/" + deviceId[constant.offset.terminalId]);
-                    mqttClient.publish("Pair/" + deviceId[constant.offset.terminalId], deviceId[constant.offset.homeId] + "/" + deviceId[constant.offset.roomId]);
+                if(deviceId.length > 0) {
+                    var deviceIdString = deviceId.join("/");
+                    mqttClient.subscribe("+/" + deviceIdString);
+                    mqttClient.publish("Pair/" + deviceIdString, "link");
                 }
              }
         });
         mqttClient.on("message", function (packet) {
             var packetSplit = packet.topic.split("/");
-            var topic = packetSplit[0],
-                terminalId = packetSplit[1];
+            var topic = packetSplit.shift(),
+                deviceIdString = packetSplit.join("/");
             var message = packet.message.substring(2);
-            var switchIndex = findSwitchIndex(deviceIdList, terminalId);
-            if(topic === "Control") {
-                var state = constant.state.default;
-                if(message === "on" || message === "off") {
-                    state = constant.state[message];
-                }
-                digitalWrite(switchList[switchIndex], state);
-            } else if(topic === "Acknowledgement") {
-                if(message === "failed") {
-                    removeDeviceId(switchIndex);
+            var switchIndex = deviceIdList.map(id=>id.join("/")).indexOf(deviceIdString);
+            if(switchIndex >= 0) {
+                if(topic === "Control") {
+                    var state = constant.state.default;
+                    if(message === "on" || message === "off") {
+                        state = constant.state[message];
+                    }
+                    digitalWrite(switchList[switchIndex], state);
+                } else if(topic === "Acknowledgement") {
+                    if(message === "failed") {
+                        removeDeviceId(switchIndex);
+                    }
                 }
             }
         });
@@ -209,6 +194,7 @@ var configuration = (function (switchCount, flash) {
     }
 
     function setupMQTTClient() {
+        initializeSwitches();
         connectToMQTTServer(configuration.mqtt, configuration.deviceIdList);
     }
 

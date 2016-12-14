@@ -50,10 +50,10 @@ module.exports = function (mqttConfiguration) {
             var messageTopic = messageTopics[messageTopicIndex];
 
             mqttServer[messageTopic.toLowerCase() + functionPostfix] = (function (messageTopic) {
-                return (function (terminalId, message, qos, retain) {
-                    if(terminalId) {
+                return (function (homeId, roomId, terminalId, message, qos, retain) {
+                    if(homeId && roomId && terminalId) {
                         var packet = {
-                            "topic" : messageTopic + "/" + terminalId,
+                            "topic" : messageTopic + "/" + homeId + "/" + roomId + "/" + terminalId,
                             "payload" : message,
                             "qos" : qos || 1,
                             "retain": !!retain
@@ -62,7 +62,7 @@ module.exports = function (mqttConfiguration) {
                             console.log(messageTopic + " Message Sent");
                         });
                     } else {
-                        console.error("Failed to send message - terminalId not found");
+                        console.error("Failed to send message - homeId/roomId/terminalId not found");
                     }
                 });
             })(messageTopic);
