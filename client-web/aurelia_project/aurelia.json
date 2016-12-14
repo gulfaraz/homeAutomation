@@ -89,6 +89,7 @@
         "name": "vendor-bundle.js",
         "prepend": [
           "node_modules/bluebird/js/browser/bluebird.core.js",
+          "node_modules/whatwg-fetch/fetch.js",
           "scripts/require.js"
         ],
         "dependencies": [
@@ -115,8 +116,6 @@
           "aurelia-templating-binding",
           "aurelia-auth",
           "aurelia-http-client",
-          "jquery",
-          "bootstrap",
           {
             "name": "text",
             "path": "../scripts/text"
@@ -136,16 +135,6 @@
             "path": "../node_modules/aurelia-testing/dist/amd",
             "main": "aurelia-testing",
             "env": "dev"
-          },
-          {
-            "name": "bootstrap",
-            "path": "../node_modules/bootstrap/dist",
-            "main": "js/bootstrap.min",
-            "deps": ["jquery"],
-            "exports": "$",
-            "resources": [
-              "css/bootstrap.css"
-            ]
           },
           {
             "name": "aurelia-auth",

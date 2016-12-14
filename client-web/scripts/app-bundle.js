@@ -688,7 +688,7 @@ define('aurelia-auth/auth-service',['exports', 'aurelia-dependency-injection', '
   var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
     return typeof obj;
   } : function (obj) {
-    return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
   };
 
   function _classCallCheck(instance, Constructor) {
@@ -723,6 +723,10 @@ define('aurelia-auth/auth-service',['exports', 'aurelia-dependency-injection', '
 
     AuthService.prototype.getTokenPayload = function getTokenPayload() {
       return this.auth.getPayload();
+    };
+
+    AuthService.prototype.setToken = function setToken(token) {
+      this.auth.setToken(Object.defineProperty({}, this.config.tokenName, { value: token }));
     };
 
     AuthService.prototype.signup = function signup(displayName, email, password) {
@@ -780,12 +784,15 @@ define('aurelia-auth/auth-service',['exports', 'aurelia-dependency-injection', '
     };
 
     AuthService.prototype.logout = function logout(redirectUri) {
-      this.eventAggregator.publish('auth:logout');
-      return this.auth.logout(redirectUri);
+      var _this3 = this;
+
+      return this.auth.logout(redirectUri).then(function () {
+        _this3.eventAggregator.publish('auth:logout');
+      });
     };
 
     AuthService.prototype.authenticate = function authenticate(name, redirect, userData) {
-      var _this3 = this;
+      var _this4 = this;
 
       var provider = this.oAuth2;
       if (this.config.providers[name].type === '1.0') {
@@ -793,20 +800,20 @@ define('aurelia-auth/auth-service',['exports', 'aurelia-dependency-injection', '
       }
 
       return provider.open(this.config.providers[name], userData || {}).then(function (response) {
-        _this3.auth.setToken(response, redirect);
-        _this3.eventAggregator.publish('auth:authenticate', response);
+        _this4.auth.setToken(response, redirect);
+        _this4.eventAggregator.publish('auth:authenticate', response);
         return response;
       });
     };
 
     AuthService.prototype.unlink = function unlink(provider) {
-      var _this4 = this;
+      var _this5 = this;
 
       var unlinkUrl = this.config.baseUrl ? (0, _authUtilities.joinUrl)(this.config.baseUrl, this.config.unlinkUrl) : this.config.unlinkUrl;
 
       if (this.config.unlinkMethod === 'get') {
         return this.http.fetch(unlinkUrl + provider).then(_authUtilities.status).then(function (response) {
-          _this4.eventAggregator.publish('auth:unlink', response);
+          _this5.eventAggregator.publish('auth:unlink', response);
           return response;
         });
       } else if (this.config.unlinkMethod === 'post') {
@@ -814,7 +821,7 @@ define('aurelia-auth/auth-service',['exports', 'aurelia-dependency-injection', '
           method: 'post',
           body: (0, _aureliaFetchClient.json)(provider)
         }).then(_authUtilities.status).then(function (response) {
-          _this4.eventAggregator.publish('auth:unlink', response);
+          _this5.eventAggregator.publish('auth:unlink', response);
           return response;
         });
       }
@@ -1269,7 +1276,7 @@ define('aurelia-auth/auth-utilities',['exports'], function (exports) {
   var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
     return typeof obj;
   } : function (obj) {
-    return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
   };
 
   var slice = [].slice;
@@ -1790,7 +1797,7 @@ define('aurelia-auth/oAuth2',['exports', 'aurelia-dependency-injection', './auth
           return Promise.reject('OAuth 2.0 state parameter mismatch.');
         }
 
-        if (current.responseType.toUpperCase().includes('TOKEN')) {
+        if (current.responseType.toUpperCase().indexOf('TOKEN') !== -1) {
           if (!_this.verifyIdToken(oauthData, current.name)) {
             return Promise.reject('OAuth 2.0 Nonce parameter mismatch.');
           }
