@@ -25,31 +25,35 @@
 
             terminalService.getDeviceConfiguration().then(function (response) {
                 scope.switchList.length = response.data.switchCount;
+                scope.deviceIdList = response.data.deviceIdList;
             }, function (response) {
                 scope.message = "Please check if you have connected to the correct device";
             });
 
-            scope.getTerminalType = function (terminalId) {
-                var type = null;
-                for(var terminalIndex in scope.terminalList) {
-                    var terminal = scope.terminalList[terminalIndex];
-                    if(terminal.terminalId === terminalId) {
-                        type = terminal.type;
-                        break;
+            scope.getTerminalProperty = function (property, deviceId) {
+                var terminalId = (deviceId) ? deviceId.split("/")[2] : null;
+                var propertyValue = null;
+                if(terminalId) {
+                    for(var terminalIndex in scope.terminalList) {
+                        var terminal = scope.terminalList[terminalIndex];
+                        if(terminal.terminalId === terminalId) {
+                            propertyValue = terminal[property];
+                            break;
+                        }
                     }
                 }
-                return type;
+                return propertyValue;
             };
 
             scope.setupDevice = function (homeCredentials, deviceIdList) {
-                for(var deviceIdIndex=0,len=scope.switchList.length; deviceIdIndex<len; deviceIdIndex++) {
-                    var deviceId = deviceIdList[deviceIdIndex];
-                    if(!deviceId) {
-                        deviceIdList[deviceIdIndex] = [ "", "", "" ];
-                    }
-                }
+                deviceIdList = deviceIdList.map(function (deviceId, deviceIdIndex) {
+                    return (deviceId ? deviceId : "//");
+                });
                 terminalService.configureDevice(homeCredentials, deviceIdList).then(function (response) {
                     console.log("Configuration Success");
+                    networkService.connect({ ssid: homeCredentials.ssid }, homeCredentials.password, function (error, credentials) {
+                        state.go("home");
+                    });
                 }, function (response) {
                     console.log("Configuration Failed");
                 });

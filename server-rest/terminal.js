@@ -26,6 +26,7 @@ module.exports = function (Home, mqttServer) {
             } else {
                 var terminal = getTerminal(home, roomId, terminalId);
                 if(terminal) {
+                    mqttServer.pairBroadcast(homeId, roomId, terminalId, "false");
                     terminal.remove();
                     home.save(callback);
                 } else {
@@ -101,6 +102,7 @@ module.exports = function (Home, mqttServer) {
 
     function linkTerminal(homeId, roomId, terminalId, callback) {
         updateTerminal(homeId, roomId, terminalId, function (terminal) {
+            mqttServer.controlBroadcast(homeId, roomId, terminalId, "on");
             terminal.linked = true;
         }, callback);
     }
@@ -108,7 +110,7 @@ module.exports = function (Home, mqttServer) {
     function unlinkTerminal(homeId, roomId, terminalId, callback) {
         updateTerminal(homeId, roomId, terminalId, function (terminal) {
             terminal.linked = false;
-            mqttServer.pairBroadcast(homeId, roomId, terminalId, false);
+            mqttServer.pairBroadcast(homeId, roomId, terminalId, "false");
         }, callback);
     }
 

@@ -54,7 +54,7 @@ module.exports = function (mqttConfiguration) {
                     if(homeId && roomId && terminalId) {
                         var packet = {
                             "topic" : messageTopic + "/" + homeId + "/" + roomId + "/" + terminalId,
-                            "payload" : message,
+                            "payload" : message.toString(),
                             "qos" : qos || 1,
                             "retain": !!retain
                         };

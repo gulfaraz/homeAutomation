@@ -5,18 +5,21 @@
     </div>
     <div ng-hide="message">
         <div class="switch-list">
-            <div class="switch" ng-repeat="switch in switchList">
+            <div class="switch" ng-repeat="switch in switchList track by $index">
                 <div class="switch-index">{{$index}}</div>
                 <div class="switch-test-button-container">
                     <button type="button" class="switch-test-button" ng-click="toggleSwitch($index)">Test</button>
                 </div>
                 <div>
-                    <select ng-model="deviceIdList[$index]" required="true" ng-options="[terminal.homeId, terminal.roomId, terminal.terminalId] as terminal.terminalName for terminal in terminalList">
+                    <select ng-model="deviceIdList[$index]" required="true" ng-options="(terminal.homeId + '/' + terminal.roomId + '/' + terminal.terminalId) as terminal.terminalName for terminal in terminalList">
                         <option value="">Unattached</option>
                     </select>
                 </div>
                 <div>
-                    <div>{{getTerminalType(deviceIdList[$index][2])}}</div>
+                    <div>{{ getTerminalProperty("linked", deviceIdList[$index]) ? "This terminal is currently linked to a switch" : "" }}</div>
+                </div>
+                <div>
+                    <div>{{getTerminalProperty("type", deviceIdList[$index])}}</div>
                 </div>
                 <div>
                     <div>{{deviceIdList[$index]}}</div>
