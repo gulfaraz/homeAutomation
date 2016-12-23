@@ -41,12 +41,20 @@
                 });
             }
 
+            function testSwitch(index) {
+                return http({
+                    method: "GET",
+                    url: "http://192.168.4.1/?i=" + index
+                });
+            }
+
             return {
                 setTerminals: setTerminals,
                 getTerminals: getTerminals,
                 fetchTerminals: fetchTerminals,
                 configureDevice: configureDevice,
-                getDeviceConfiguration: getDeviceConfiguration
+                getDeviceConfiguration: getDeviceConfiguration,
+                testSwitch: testSwitch
             };
         }])
         .factory("NetworkService", [ function () {

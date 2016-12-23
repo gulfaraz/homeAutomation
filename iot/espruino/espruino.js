@@ -48,7 +48,7 @@ var configuration = (function (switchCount, flash) {
     configuration.home = loadHomeCredentials();
 
     configuration.mqtt = {
-        host: "10.244.46.200",
+        host: "10.244.66.28",
         port: 1883,
         keepAlive: 60
     };
@@ -106,6 +106,7 @@ var configuration = (function (switchCount, flash) {
         console.log(credentials);
         wifi[functionName](credentials.ssid, { "password" : credentials.password }, function (error) {
             if(!error) {
+                initializeSwitches();
                 callback();
             }
         });
@@ -127,8 +128,15 @@ var configuration = (function (switchCount, flash) {
                 }
             });
         } else {
-          response.writeHead(200);
-          response.end(JSON.stringify(configuration));
+            response.writeHead(200);
+            var params = url.parse(request.url, true);
+            if (params.query && "i" in params.query) {
+                var switchNumber = switchList[params.query.i];
+                digitalWrite(switchNumber, (!digitalRead(switchNumber) ? 1 : 0));
+                response.end(JSON.stringify({ state : digitalRead(switchNumber) }));
+            } else {
+                response.end(JSON.stringify(configuration));
+            }
         }
     }
 
@@ -208,7 +216,6 @@ var configuration = (function (switchCount, flash) {
     }
 
     function setupMQTTClient() {
-        initializeSwitches();
         connectToMQTTServer(configuration.mqtt, configuration.deviceIdList);
     }
 

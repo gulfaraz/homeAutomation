@@ -58,5 +58,13 @@
                     console.log("Configuration Failed");
                 });
             };
+
+            scope.toggleSwitch = function (index) {
+                terminalService.testSwitch(index).then(function (response) {
+                    console.log("Switch is turned " + ((response.data.state === 1) ? "on" : "off"));
+                }, function (response) {
+                    console.log("Unable to access switch");
+                });
+            };
         }]);
 })();
