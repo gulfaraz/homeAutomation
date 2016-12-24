@@ -136,7 +136,7 @@ define('http',['exports', 'aurelia-fetch-client', 'aurelia-framework', 'aurelia-
         return CustomHttpClient;
     }(_aureliaFetchClient.HttpClient)) || _class);
 });
-define('main',['exports', './environment', './auth-config'], function (exports, _environment, _authConfig) {
+define('main',['exports', './environment', './auth-config', 'material-design-lite'], function (exports, _environment, _authConfig) {
   'use strict';
 
   Object.defineProperty(exports, "__esModule", {
@@ -163,7 +163,7 @@ define('main',['exports', './environment', './auth-config'], function (exports, 
   function configure(aurelia) {
     aurelia.use.standardConfiguration().plugin('aurelia-auth', function (baseConfig) {
       baseConfig.configure(_authConfig2.default);
-    }).feature('resources');
+    }).plugin('aurelia-mdl-plugin').feature('resources');
 
     if (_environment2.default.debug) {
       aurelia.use.developmentLogging();
@@ -550,7 +550,7 @@ define('login/login',['exports', 'aurelia-auth', 'aurelia-framework'], function 
         function Login(auth) {
             _classCallCheck(this, Login);
 
-            this.title = "Login";
+            this.title = "Home Connect Account";
             this.userName = "";
             this.password = "";
             this.error = "";
@@ -565,7 +565,13 @@ define('login/login',['exports', 'aurelia-auth', 'aurelia-framework'], function 
                 console.log("Login response: " + response);
             }).catch(function (error) {
                 _this.error = error.statusText;
+                _this.dialog.showModal();
             });
+        };
+
+        Login.prototype.closeDialog = function closeDialog() {
+            this.error = "";
+            this.dialog.close();
         };
 
         return Login;
@@ -716,6 +722,109 @@ define('resources/index',["exports"], function (exports) {
   });
   exports.configure = configure;
   function configure(config) {}
+});
+define('side-bar/side-bar',['exports', 'aurelia-framework', 'aurelia-auth'], function (exports, _aureliaFramework, _aureliaAuth) {
+    'use strict';
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    exports.SideBar = undefined;
+
+    function _initDefineProp(target, property, descriptor, context) {
+        if (!descriptor) return;
+        Object.defineProperty(target, property, {
+            enumerable: descriptor.enumerable,
+            configurable: descriptor.configurable,
+            writable: descriptor.writable,
+            value: descriptor.initializer ? descriptor.initializer.call(context) : void 0
+        });
+    }
+
+    function _classCallCheck(instance, Constructor) {
+        if (!(instance instanceof Constructor)) {
+            throw new TypeError("Cannot call a class as a function");
+        }
+    }
+
+    var _createClass = function () {
+        function defineProperties(target, props) {
+            for (var i = 0; i < props.length; i++) {
+                var descriptor = props[i];
+                descriptor.enumerable = descriptor.enumerable || false;
+                descriptor.configurable = true;
+                if ("value" in descriptor) descriptor.writable = true;
+                Object.defineProperty(target, descriptor.key, descriptor);
+            }
+        }
+
+        return function (Constructor, protoProps, staticProps) {
+            if (protoProps) defineProperties(Constructor.prototype, protoProps);
+            if (staticProps) defineProperties(Constructor, staticProps);
+            return Constructor;
+        };
+    }();
+
+    function _applyDecoratedDescriptor(target, property, decorators, descriptor, context) {
+        var desc = {};
+        Object['ke' + 'ys'](descriptor).forEach(function (key) {
+            desc[key] = descriptor[key];
+        });
+        desc.enumerable = !!desc.enumerable;
+        desc.configurable = !!desc.configurable;
+
+        if ('value' in desc || desc.initializer) {
+            desc.writable = true;
+        }
+
+        desc = decorators.slice().reverse().reduce(function (desc, decorator) {
+            return decorator(target, property, desc) || desc;
+        }, desc);
+
+        if (context && desc.initializer !== void 0) {
+            desc.value = desc.initializer ? desc.initializer.call(context) : void 0;
+            desc.initializer = undefined;
+        }
+
+        if (desc.initializer === void 0) {
+            Object['define' + 'Property'](target, property, desc);
+            desc = null;
+        }
+
+        return desc;
+    }
+
+    function _initializerWarningHelper(descriptor, context) {
+        throw new Error('Decorating class property failed. Please ensure that transform-class-properties is enabled.');
+    }
+
+    var _dec, _class, _desc, _value, _class2, _descriptor;
+
+    var SideBar = exports.SideBar = (_dec = (0, _aureliaFramework.inject)(_aureliaAuth.AuthService), _dec(_class = (_class2 = function () {
+        function SideBar(auth) {
+            _classCallCheck(this, SideBar);
+
+            this._isAuthenticated = false;
+
+            _initDefineProp(this, 'router', _descriptor, this);
+
+            this.auth = auth;
+        }
+
+        _createClass(SideBar, [{
+            key: 'isAuthenticated',
+            get: function get() {
+                return this.auth.isAuthenticated();
+            }
+        }]);
+
+        return SideBar;
+    }(), (_descriptor = _applyDecoratedDescriptor(_class2.prototype, 'router', [_aureliaFramework.bindable], {
+        enumerable: true,
+        initializer: function initializer() {
+            return null;
+        }
+    })), _class2)) || _class);
 });
 define('aurelia-auth/auth-service',['exports', 'aurelia-dependency-injection', 'aurelia-fetch-client', 'aurelia-event-aggregator', './authentication', './base-config', './oAuth1', './oAuth2', './auth-utilities'], function (exports, _aureliaDependencyInjection, _aureliaFetchClient, _aureliaEventAggregator, _authentication, _baseConfig, _oAuth, _oAuth2, _authUtilities) {
   'use strict';
@@ -2042,12 +2151,15 @@ define('aurelia-auth/auth-filter',["exports"], function (exports) {
     return AuthFilterValueConverter;
   }();
 });
-define('text!app.html', ['module'], function(module) { module.exports = "<template>\n    <require from='nav-bar/nav-bar'></require>\n    <nav-bar router.bind=\"router\"></nav-bar>\n    <div class=\"container\">\n        <router-view></router-view>\n    </div>\n</template>\n"; });
+define('text!app.html', ['module'], function(module) { module.exports = "<template>\n    <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/icon?family=Material+Icons\">\n    <require from=\"material-design-lite/material.min.css\"></require>\n    <require from='nav-bar/nav-bar'></require>\n    <require from='side-bar/side-bar'></require>\n    <require from=\"./app.css\"></require>\n    <div class=\"mdl-layout mdl-js-layout mdl-layout--fixed-header home-layout mdl-layout--no-desktop-drawer-button\">\n        <header class=\"mdl-layout__header mdl-layout__header--seamed mdl-color--grey-800\">\n            <div class=\"mdl-layout__header-row\">\n                <span class=\"mdl-layout-title\">Home Connect</span>\n                <div class=\"mdl-layout-spacer\"></div>\n                <nav-bar router.bind=\"router\"></nav-bar>\n            </div>\n        </header>\n        <div class=\"mdl-layout__drawer\">\n            <span class=\"mdl-layout-title\">Home Connect</span>\n            <side-bar router.bind=\"router\"></side-bar>\n        </div>\n        <main class=\"mdl-layout__content\">\n            <div class=\"page-content\">\n                <div class=\"container\">\n                    <router-view></router-view>\n                </div>\n            </div>\n        </main>\n    </div>\n</template>\n"; });
+define('text!app.css', ['module'], function(module) { module.exports = ".home-layout {\n  background: url(\"/assets/home.jpg\") center/cover; }\n\n.mdl-dialog__title {\n  font-size: 2rem; }\n\n.mdl-textfield__label:after {\n  background: gray; }\n"; });
 define('text!device/device.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <h4><a href=\"#\">Click here to download HomeConnect</a></h4>\n    <div>You will need to install HomeConnect to link your devices</div>\n    <div>The following are the steps required before you use HomeConnect</div>\n    <div>You can download the application while you do the following so you don't have to wait later</div>\n    <ol>\n        <li>Create your Home</li>\n        <li>Add Rooms to you Home</li>\n        <li>Add Lights, Fans and other end points in your Rooms</li>\n        <li>Download and install the HomeConnect application</li>\n        <li>Once installed, open the HomeConnect application</li>\n    </ol>\n    <div>Now that you have installed the HomeConnect application on your machine</div>\n    <div>The follow the below steps to link your devices to your HomeConnect account</div>\n    <ol>\n        <li>Sign in into the HomeConnect application using your HomeConnect account</li>\n        <li>Choose your HOME network, which will allow the devices to connect to the internet</li>\n        <ul>\n            <li>If you are prompted by your system to allow network modification access, grant the required access to connect to the device network</li>\n        </ul>\n        <li>Choose the device you wish to connect to using the password you received with the device</li>\n        <ul>\n            <li>In case you have lost the password, send us a mail at <a href=\"mailto:support@homeconnect.com\" target=\"_top\">support@homeconnect.com</a></li>\n        </ul>\n        <li>Select the end points you would like to connect the selected device to</li>\n        <li>Click SAVE</li>\n        <li>Sign into homeconnect.com and control your home</li>\n    </ol>\n    <p>Congratulations</p>\n    <div>We would like to know your experience with HomeConnect, while feedback/suggestions/queries are welcome we simply enjoy knowing that our product is useful to you and is a part of your home. So please spare a few minutes in writing to us at <a href=\"mailto:hi@homeconnect.com\" target=\"_top\">hi@homeconnect.com</a></div>\n    <hr>\n    <a route-href=\"route: home\" title=\"Go Home\">Home</a>\n</template>\n"; });
+define('text!login/login.css', ['module'], function(module) { module.exports = ".login-layout {\n  align-items: center;\n  justify-content: center; }\n  .login-layout .login-layout-content {\n    padding: 24px;\n    flex: none; }\n"; });
 define('text!home/home.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div repeat.for=\"home of homes\">\n        <a route-href=\"route: viewHome; params.bind: { homeId: home._id }\" title=\"View Home\">${home.homeName}</a>\n    </div>\n    <hr>\n    <a route-href=\"route: newHome\" title=\"Add A Home\">Add HOME</a>\n</template>\n"; });
 define('text!home/newHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <form role=\"form\" submit.delegate=\"add()\">\n        <div>\n            <div>\n                <label for=\"homeName\">Home Name</label>\n                <input name=\"homeName\" id=\"homeName\" type=\"text\" value.bind=\"homeName\">\n            </div>\n        </div>\n        <div>\n            <div>\n                <label for=\"address\">Address</label>\n                <input name=\"address\" id=\"address\" type=\"text\" value.bind=\"address\">\n            </div>\n        </div>\n        <div>\n            <button type=\"submit\">Add</button>\n        </div>\n    </form>\n    <hr>\n    <div>${message}</div>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
 define('text!home/viewHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${home.homeName}</h1>\n    <div>${home.address}</div>\n    <div repeat.for=\"room of home.rooms\">\n        <div>${room.roomName}</div>\n        <div repeat.for=\"terminal of room.terminals\">\n            <div>${terminal.terminalName}</div>\n            <div>${terminal.type}</div>\n            <div>${terminal.state}</div>\n            <div if.bind=\"terminal.linked\">\n                <div if.bind=\"terminal.synced\">\n                    <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'toggle')\">Toggle</button>\n                    <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'on')\" if.bind=\"!terminal.state\">On</button>\n                    <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'off')\" if.bind=\"terminal.state\">Off</button>\n                </div>\n                <div if.bind=\"!terminal.synced\">\n                    <button type=\"button\" click.delegate=\"refreshTerminal(room._id, terminal._id)\">Refresh</button>\n                </div>\n                <div>\n                    <button type=\"button\" click.delegate=\"unlinkTerminal(room._id, terminal._id)\">Unlink Device</button>\n                </div>\n            </div>\n            <div if.bind=\"!terminal.linked\">\n                <div>\n                    <a route-href=\"route: device\" title=\"Link Device\">Link Device</a>\n                </div>\n                <div>\n                    <button type=\"button\" click.delegate=\"removeTerminal(room._id, terminal._id)\">Remove Terminal</button>\n                </div>\n            </div>\n            <hr>\n        </div>\n        <div>\n            <div>\n                <input name=\"newTerminalName\" id=\"newTerminalName\" type=\"text\" value.bind=\"$parent.newTerminalName\">\n            </div>\n            <div>\n                <select name=\"newTerminalType\" id=\"newTerminalType\" value.bind=\"$parent.newTerminalType\">\n                    <option value=\"\">Select</option>\n                    <option value=\"light\">Light</option>\n                    <option value=\"fan\">Fan</option>\n                </select>\n            </div>\n            <div>\n                <button type=\"button\" click.delegate=\"addTerminal(room._id)\">Add Terminal</button>\n            </div>\n        </div>\n        <button type=\"button\" click.delegate=\"removeRoom(room._id)\">Remove Room</button>\n        <hr>\n    </div>\n    <div>\n        <input name=\"newRoomName\" id=\"newRoomName\" type=\"text\" value.bind=\"newRoomName\">\n        <button type=\"button\" click.delegate=\"addRoom()\">Add Room</button>\n    </div>\n    <div>\n        <button type=\"button\" click.delegate=\"removeHome()\">DELETE</button>\n    </div>\n    <hr>\n    <div>${message}</div>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
-define('text!login/login.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div>\n        <form role=\"form\" submit.delegate=\"login()\">\n            <div>\n                <div>\n                    <label for=\"userName\">User Name</label>\n                    <input name=\"userName\" id=\"userName\" type=\"text\" value.bind=\"userName\">\n                </div>\n            </div>\n            <div>\n                <div>\n                    <label for=\"password\">Password</label>\n                    <input name=\"password\" id=\"password\" type=\"password\" value.bind=\"password\">\n                </div>\n            </div>\n            <div>\n                <button type=\"submit\">Login</button>\n            </div>\n        </form>\n        <div class=\"alert alert-danger\" if.bind=\"error\">${error}</div>\n    </div>\n</template>\n"; });
+define('text!login/login.html', ['module'], function(module) { module.exports = "<template>\n    <require from=\"./login.css\"></require>\n    <div class=\"mdl-layout mdl-js-layout login-layout\" show.bind=\"!error\">\n        <main class=\"mdl-layout__content login-layout-content\">\n            <div class=\"mdl-card mdl-shadow--6dp\">\n                <form role=\"form\" submit.delegate=\"login()\">\n                    <div class=\"mdl-card__title mdl-color--grey-300\">\n                        <h2 class=\"mdl-card__title-text\">${title}</h2>\n                    </div>\n                    <div class=\"mdl-card__supporting-text\">\n                            <div class=\"mdl-textfield mdl-js-textfield\">\n                                <input class=\"mdl-textfield__input mdl-textfield__input--yellow\" type=\"text\" name=\"userName\" id=\"userName\" value.bind=\"userName\" />\n                                <label class=\"mdl-textfield__label\" for=\"userName\">User Name</label>\n                            </div>\n                            <div class=\"mdl-textfield mdl-js-textfield\">\n                                <input class=\"mdl-textfield__input\" type=\"password\" name=\"password\" id=\"password\" value.bind=\"password\" />\n                                <label class=\"mdl-textfield__label\" for=\"password\">Passcode</label>\n                            </div>\n                    </div>\n                    <div class=\"mdl-card__actions mdl-card--border\">\n                        <button type=\"submit\" class=\"mdl-button mdl-js-button mdl-js-ripple-effect\">Sign In</button>\n                    </div>\n                </form>\n            </div>\n        </main>\n    </div>\n    <dialog ref=\"dialog\" id=\"dialog\" class=\"mdl-dialog\">\n        <h3 class=\"mdl-dialog__title\">Access Denied</h3>\n        <div class=\"mdl-dialog__content\">\n            <p>${error}</p>\n        </div>\n        <div class=\"mdl-dialog__actions\">\n            <button type=\"button\" class=\"mdl-button\" click.delegate=\"closeDialog()\">Close</button>\n        </div>\n    </dialog>\n</template>\n"; });
 define('text!logout/logout.html', ['module'], function(module) { module.exports = "<!-- Aurelia expects a template for each route.\nWe don't actuall need a template for logging out, \nbut we provide an empty one to not get any errors -->\n<template></template>"; });
-define('text!nav-bar/nav-bar.html', ['module'], function(module) { module.exports = "<template>\n    <ul if.bind=\"!isAuthenticated\" class=\"nav navbar-nav navbar-right\">\n        <li><a route-href=\"route: login\">Login</a></li>\n    </ul>\n    <ul if.bind=\"isAuthenticated\" class=\"nav navbar-nav navbar-right\">\n        <li><a route-href=\"route: logout\">Logout</a></li>\n    </ul>\n</template>\n"; });
+define('text!nav-bar/nav-bar.html', ['module'], function(module) { module.exports = "<template>\n    <nav class=\"mdl-navigation mdl-layout--large-screen-only\">\n        <a class=\"mdl-navigation__link\" route-href=\"route: logout\" if.bind=\"isAuthenticated\">Logout</a>\n    </nav>\n</template>\n"; });
+define('text!side-bar/side-bar.html', ['module'], function(module) { module.exports = "<template>\n    <nav class=\"mdl-navigation\">\n        <a class=\"mdl-navigation__link\" route-href=\"route: logout\" if.bind=\"isAuthenticated\">Logout</a>\n    </nav>\n</template>\n"; });
 //# sourceMappingURL=app-bundle.js.map

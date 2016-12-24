@@ -5,7 +5,7 @@ import {inject} from 'aurelia-framework';
 
 export class Login {
 
-    title = "Login";
+    title = "Home Connect Account";
     userName = "";
     password = "";
     error = "";
@@ -21,6 +21,12 @@ export class Login {
             })
             .catch(error => {
                 this.error = error.statusText;
+                this.dialog.showModal();
             });
+    };
+
+    closeDialog() {
+        this.error = "";
+        this.dialog.close();
     };
 }

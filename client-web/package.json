@@ -13,8 +13,10 @@
     "aurelia-bootstrapper": "^1.0.0",
     "aurelia-fetch-client": "^1.0.0",
     "aurelia-http-client": "^1.0.0",
+    "aurelia-mdl-plugin": "^0.1.16",
     "aurelia-validation": "^0.12.5",
     "bluebird": "^3.4.1",
+    "material-design-lite": "^1.3.0",
     "whatwg-fetch": "^2.0.1"
   },
   "peerDependencies": {},

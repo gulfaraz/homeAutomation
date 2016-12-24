@@ -1,23 +1,36 @@
 <template>
-    <h1>${title}</h1>
-    <div>
-        <form role="form" submit.delegate="login()">
-            <div>
-                <div>
-                    <label for="userName">User Name</label>
-                    <input name="userName" id="userName" type="text" value.bind="userName">
-                </div>
+    <require from="./login.css"></require>
+    <div class="mdl-layout mdl-js-layout login-layout" show.bind="!error">
+        <main class="mdl-layout__content login-layout-content">
+            <div class="mdl-card mdl-shadow--6dp">
+                <form role="form" submit.delegate="login()">
+                    <div class="mdl-card__title mdl-color--grey-300">
+                        <h2 class="mdl-card__title-text">${title}</h2>
+                    </div>
+                    <div class="mdl-card__supporting-text">
+                            <div class="mdl-textfield mdl-js-textfield">
+                                <input class="mdl-textfield__input mdl-textfield__input--yellow" type="text" name="userName" id="userName" value.bind="userName" />
+                                <label class="mdl-textfield__label" for="userName">User Name</label>
+                            </div>
+                            <div class="mdl-textfield mdl-js-textfield">
+                                <input class="mdl-textfield__input" type="password" name="password" id="password" value.bind="password" />
+                                <label class="mdl-textfield__label" for="password">Passcode</label>
+                            </div>
+                    </div>
+                    <div class="mdl-card__actions mdl-card--border">
+                        <button type="submit" class="mdl-button mdl-js-button mdl-js-ripple-effect">Sign In</button>
+                    </div>
+                </form>
             </div>
-            <div>
-                <div>
-                    <label for="password">Password</label>
-                    <input name="password" id="password" type="password" value.bind="password">
-                </div>
-            </div>
-            <div>
-                <button type="submit">Login</button>
-            </div>
-        </form>
-        <div class="alert alert-danger" if.bind="error">${error}</div>
+        </main>
     </div>
+    <dialog ref="dialog" id="dialog" class="mdl-dialog">
+        <h3 class="mdl-dialog__title">Access Denied</h3>
+        <div class="mdl-dialog__content">
+            <p>${error}</p>
+        </div>
+        <div class="mdl-dialog__actions">
+            <button type="button" class="mdl-button" click.delegate="closeDialog()">Close</button>
+        </div>
+    </dialog>
 </template>

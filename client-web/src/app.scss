@@ -1,0 +1,13 @@
+.home-layout {
+    background: url('/assets/home.jpg') center / cover;
+}
+
+.mdl-dialog__title {
+    font-size: 2rem;
+}
+
+.mdl-textfield__label {
+    &:after {
+        background: gray;
+    }
+}

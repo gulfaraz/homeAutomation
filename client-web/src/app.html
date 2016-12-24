@@ -1,7 +1,27 @@
 <template>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <require from="material-design-lite/material.min.css"></require>
     <require from='nav-bar/nav-bar'></require>
-    <nav-bar router.bind="router"></nav-bar>
-    <div class="container">
-        <router-view></router-view>
+    <require from='side-bar/side-bar'></require>
+    <require from="./app.css"></require>
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header home-layout mdl-layout--no-desktop-drawer-button">
+        <header class="mdl-layout__header mdl-layout__header--seamed mdl-color--grey-800">
+            <div class="mdl-layout__header-row">
+                <span class="mdl-layout-title">Home Connect</span>
+                <div class="mdl-layout-spacer"></div>
+                <nav-bar router.bind="router"></nav-bar>
+            </div>
+        </header>
+        <div class="mdl-layout__drawer">
+            <span class="mdl-layout-title">Home Connect</span>
+            <side-bar router.bind="router"></side-bar>
+        </div>
+        <main class="mdl-layout__content">
+            <div class="page-content">
+                <div class="container">
+                    <router-view></router-view>
+                </div>
+            </div>
+        </main>
     </div>
 </template>
