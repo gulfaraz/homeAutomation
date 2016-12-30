@@ -150,6 +150,27 @@
             "name": "aurelia-http-client",
             "path": "../node_modules/aurelia-http-client/dist/amd",
             "main": "aurelia-http-client"
+          },
+          {
+            "name": "material-design-lite",
+            "path": "../node_modules/material-design-lite/dist",
+            "main": "material",
+            "resources": [
+              "material.min.css"
+            ]
+          },
+          {
+            "name": "aurelia-mdl-plugin",
+            "path": "../node_modules/aurelia-mdl-plugin/dist/amd",
+            "main": "index"
+          },
+          {
+            "name": "dialog-polyfill",
+            "path": "../node_modules/dialog-polyfill",
+            "main": "dialog-polyfill",
+            "resources": [
+              "dialog-polyfill.css"
+            ]
           }
         ]
       }

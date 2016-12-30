@@ -1,61 +1,131 @@
 <template>
-    <h1>${home.homeName}</h1>
-    <div>${home.address}</div>
-    <div repeat.for="room of home.rooms">
-        <div>${room.roomName}</div>
-        <div repeat.for="terminal of room.terminals">
-            <div>${terminal.terminalName}</div>
-            <div>${terminal.type}</div>
-            <div>${terminal.state}</div>
-            <div if.bind="terminal.linked">
-                <div if.bind="terminal.synced">
-                    <button type="button" click.delegate="setTerminalState(room._id, terminal._id, 'toggle')">Toggle</button>
-                    <button type="button" click.delegate="setTerminalState(room._id, terminal._id, 'on')" if.bind="!terminal.state">On</button>
-                    <button type="button" click.delegate="setTerminalState(room._id, terminal._id, 'off')" if.bind="terminal.state">Off</button>
-                </div>
-                <div if.bind="!terminal.synced">
-                    <button type="button" click.delegate="refreshTerminal(room._id, terminal._id)">Refresh</button>
-                </div>
-                <div>
-                    <button type="button" click.delegate="unlinkTerminal(room._id, terminal._id)">Unlink Device</button>
-                </div>
+    <require from="./viewHome.css"></require>
+    <h4 class="home-header">
+        <a route-href="route: home" title="Back" class="home-header-back-icon-container">
+            <i class="material-icons home-header-back-icon">chevron_left</i>
+        </a><div class="home-header-label">${home.homeName}</div><div class="home-actions-container">
+            <div class="home-action-container">
+                <div click.delegate="showConfirmDialog('home', home)" title="Delete Home"><i class="material-icons home-icon home-delete-icon">delete</i></div>
             </div>
-            <div if.bind="!terminal.linked">
-                <div>
-                    <a route-href="route: device" title="Link Device">Link Device</a>
-                </div>
-                <div>
-                    <button type="button" click.delegate="removeTerminal(room._id, terminal._id)">Remove Terminal</button>
-                </div>
-            </div>
-            <hr>
         </div>
-        <div>
-            <div>
-                <input name="newTerminalName" id="newTerminalName" type="text" value.bind="$parent.newTerminalName">
+    </h4>
+    <h4 class="home-address" if.bind="home.address.length > 0">${home.address}</h4>
+    <ul class="room-list">
+        <li class="room-item" repeat.for="room of home.rooms">
+            <div class="mdl-grid room-header ${ show.roomList[room._id] ? 'room-closed' : 'room-open' }">
+                <div class="mdl-cell mdl-cell--1-col">
+                    <i class="material-icons room-avatar-icon">dashboard</i>
+                </div>
+                <div class="mdl-cell mdl-cell--7-col room-title-container" click.delegate="show.toggleRoom(room._id)">
+                    <div class="room-title">${room.roomName}</div>
+                    <div class="room-sub-title">${room.terminals.length} Terminal${room.terminals.length > 1 ? "s" : ""}</div>
+                </div>
+                <div class="mdl-cell mdl-cell--4-col room-actions-container">
+                    <div class="room-action-container" show.bind="show.roomList[room._id]">
+                        <div click.delegate="show.setRoom(room._id, false)" title="Leave Room"><i class="material-icons room-icon room-collapse-icon">expand_less</i></div>
+                    </div>
+                    <div class="room-action-container" show.bind="!show.roomList[room._id]">
+                        <div click.delegate="show.setRoom(room._id, true)" title="Enter Room"><i class="material-icons room-icon room-expand-icon">expand_more</i></div>
+                    </div>
+                    <div class="room-action-container">
+                        <div click.delegate="showConfirmDialog('room', room)" title="Delete Room"><i class="material-icons room-icon room-delete-icon">delete</i></div>
+                    </div>
+                </div>
             </div>
-            <div>
-                <select name="newTerminalType" id="newTerminalType" value.bind="$parent.newTerminalType">
+            <div class="room-content" show.bind="show.roomList[room._id]">
+                <div class="mdl-grid terminal-item" repeat.for="terminal of room.terminals">
+                    <div class="mdl-cell mdl-cell--1-col terminal-type">
+                        <i class="material-icons terminal-icon" show.bind="terminal.type === 'light'">lightbulb_outline</i>
+                        <i class="material-icons terminal-icon" show.bind="terminal.type === 'fan'">toys</i>
+                    </div>
+                    <div class="mdl-cell mdl-cell--5-col terminal-name" click.delegate="toggleTerminalState(room._id, terminal)">${terminal.terminalName}</div>
+                    <div class="mdl-cell mdl-cell--6-col terminal-actions">
+                        <div if.bind="terminal.linked">
+                            <div class="terminal-action-container" if.bind="terminal.synced">
+                                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect terminal-switch-control" for="terminal-${terminal._id}-toggle">
+                                    <input type="checkbox" id="terminal-${terminal._id}-toggle" class="mdl-switch__input" checked.bind="terminal.state" change.delegate="setTerminalState(room._id, terminal._id, (terminal.state ? 'on' : 'off'))">
+                                    <span class="mdl-switch__label"></span>
+                                </label>
+                            </div>
+                            <div class="terminal-action-container" if.bind="!terminal.synced">
+                                <div click.delegate="refreshTerminal(room._id, terminal._id)" title="Refresh Terminal State"><i class="material-icons terminal-icon terminal-refresh-icon">refresh</i></div>
+                            </div>
+                            <div class="terminal-action-container" class="terminal-action-container">
+                                <div click.delegate="showConfirmDialog('terminal-unlink', { 'room' : room, 'terminal' : terminal })" title="Unlink from Device"><i class="material-icons terminal-icon terminal-unlink-icon">link</i></div>
+                            </div>
+                        </div>
+                        <div if.bind="!terminal.linked">
+                            <div class="terminal-action-container">
+                                <a route-href="route: device" title="Link to Device"><i class="material-icons terminal-icon terminal-link-icon">link</i></a>
+                            </div>
+                            <div class="terminal-action-container">
+                                <div click.delegate="showConfirmDialog('terminal-remove', { 'room' : room, 'terminal' : terminal })" title="Delete Terminal"><i class="material-icons terminal-icon terminal-delete-icon">delete</i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="terminal-item terminal-item-add-terminal">
+                    <div class="add-terminal-trigger-container" click.delegate="showAddTerminalDialog(room._id)" title="Add Terminal">
+                        <i class="material-icons add-terminal-trigger-icon">add</i>
+                        <div class="add-terminal-trigger-label">Add Terminal</div>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li class="mdl-list__item add-room-row" click.delegate="addRoomDialog.showModal()">
+            <span class="mdl-list__item-primary-content">
+                <i class="material-icons mdl-list__item-icon">add</i>
+                <span>Add Room</span>
+            </span>
+        </li>
+    </ul>
+    <dialog ref="addTerminalDialog" id="addTerminalDialog" class="mdl-dialog">
+        <h3 class="mdl-dialog__title">Add Terminal</h3>
+        <div class="mdl-dialog__content">
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <input class="mdl-textfield__input" type="text" name="newTerminalName" id="newTerminalName" value.bind="newTerminalName" />
+                <label class="mdl-textfield__label" for="newTerminalName">New Terminal Name</label>
+            </div>
+            <div class="input-dropdown-container">
+                <label class="input-dropdown-label">Terminal Type</label>
+                <select class="input-dropdown" name="newTerminalType" id="newTerminalType" value.bind="newTerminalType">
                     <option value="">Select</option>
                     <option value="light">Light</option>
                     <option value="fan">Fan</option>
                 </select>
             </div>
-            <div>
-                <button type="button" click.delegate="addTerminal(room._id)">Add Terminal</button>
+        </div>
+        <div class="mdl-dialog__actions">
+            <button type="button" class="mdl-button" click.delegate="addTerminal()">Add Terminal</button>
+            <button type="button" class="mdl-button" click.delegate="closeAddTerminalDialog()">Close</button>
+        </div>
+    </dialog>
+    <dialog ref="addRoomDialog" id="addRoomDialog" class="mdl-dialog">
+        <h3 class="mdl-dialog__title">Add Room</h3>
+        <div class="mdl-dialog__content">
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <input class="mdl-textfield__input" type="text" name="newRoomName" id="newRoomName" value.bind="newRoomName" />
+                <label class="mdl-textfield__label" for="newRoomName">New Room Name</label>
             </div>
         </div>
-        <button type="button" click.delegate="removeRoom(room._id)">Remove Room</button>
-        <hr>
+        <div class="mdl-dialog__actions">
+            <button type="button" class="mdl-button" click.delegate="addRoom()">Add Room</button>
+            <button type="button" class="mdl-button" click.delegate="closeAddRoomDialog()">Close</button>
+        </div>
+    </dialog>
+    <dialog ref="confirmDialog" id="confirmDialog" class="mdl-dialog">
+        <h3 class="mdl-dialog__title">Confirm Action</h3>
+        <div class="mdl-dialog__content">
+            <div class="confirm-dialog-message">${confirm.message}</div>
+            <div class="confirm-dialog-warn">${confirm.warn}</div>
+        </div>
+        <div class="mdl-dialog__actions">
+            <button type="button" class="mdl-button confirm-button" click.delegate="confirm.button.action()">${confirm.button.label}</button>
+            <button type="button" class="mdl-button cancel-button" click.delegate="closeConfirmDialog()">Cancel</button>
+        </div>
+    </dialog>
+    <div ref="toastContainer" id="toastContainer" class="mdl-js-snackbar mdl-snackbar">
+        <div class="mdl-snackbar__text"></div>
+        <button class="mdl-snackbar__action" type="button"></button>
     </div>
-    <div>
-        <input name="newRoomName" id="newRoomName" type="text" value.bind="newRoomName">
-        <button type="button" click.delegate="addRoom()">Add Room</button>
-    </div>
-    <div>
-        <button type="button" click.delegate="removeHome()">DELETE</button>
-    </div>
-    <hr>
-    <div>${message}</div>
-    <a route-href="route: home" title="Cancel">Back</a>
 </template>

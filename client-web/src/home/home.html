@@ -1,8 +1,30 @@
 <template>
-    <h1>${title}</h1>
-    <div repeat.for="home of homes">
-        <a route-href="route: viewHome; params.bind: { homeId: home._id }" title="View Home">${home.homeName}</a>
-    </div>
-    <hr>
-    <a route-href="route: newHome" title="Add A Home">Add HOME</a>
+    <require from="./home.css"></require>
+    <h4 class="home-list-header">${title}</h4>
+    <ul class="home-list">
+        <li class="home-item-container" repeat.for="home of homes">
+            <div class="mdl-grid home-list-item" click.delegate="enterHome(home._id)" title="Enter Home">
+                <div class="mdl-cell mdl-cell--1-col home-icon-container">
+                    <i class="material-icons home-icon">home</i>
+                </div>
+                <div class="mdl-cell mdl-cell--7-col home-title-container">
+                    <div class="home-title">${home.homeName}</div>
+                    <div class="home-sub-title">${home.rooms.length} Room${home.rooms.length > 1 ? "s" : ""}</div>
+                </div>
+                <div class="mdl-cell mdl-cell--4-col home-actions-container">
+                    <div class="home-action-container">
+                        <i class="material-icons home-icon">chevron_right</i>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li class="mdl-list__item add-home-row">
+            <a class="home-list-add-home" route-href="route: newHome" title="Add Home">
+                <span class="mdl-list__item-primary-content">
+                    <i class="material-icons mdl-list__item-icon">add</i>
+                    <span>Add Home</span>
+                </span>
+            </a>
+        </li>
+    </ul>
 </template>
