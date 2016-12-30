@@ -27,7 +27,7 @@ export default class {
                     route: 'home/new',
                     name: 'newHome',
                     moduleId: 'home/newHome',
-                    title: 'Login',
+                    title: 'Add Home',
                     auth: true
                 },
                 {

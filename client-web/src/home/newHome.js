@@ -6,7 +6,7 @@ import {CustomHttpClient} from '../http';
 
 export class newHome {
 
-    title = "Add new home";
+    title = "Add Home";
     homeName = "";
     address = "";
 
@@ -30,6 +30,12 @@ export class newHome {
                 if(data.home) {
                     this.router.navigateToRoute("viewHome", { homeId: data.home._id });
                 }
+                this.dialog.showModal();
             });
     }
+
+    closeDialog() {
+        this.message = "";
+        this.dialog.close();
+    };
 }

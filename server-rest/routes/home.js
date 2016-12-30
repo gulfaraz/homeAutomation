@@ -58,7 +58,7 @@ module.exports = function (router, auth, Home) {
                 if(err || !home) {
                     res.error({ message : err && err.toString() });
                 } else {
-                    res.ok("Home " + req.params.homeId + " Deleted");
+                    res.ok({ "message" : "Home " + req.params.homeId + " Deleted" });
                 }
             });
         } else {

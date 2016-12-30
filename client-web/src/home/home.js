@@ -1,13 +1,15 @@
 import {inject, useView} from 'aurelia-framework';
+import { Router } from 'aurelia-router';
 import {CustomHttpClient} from '../http';
 
-@inject(CustomHttpClient)
+@inject(CustomHttpClient, Router)
 
 export class Home {
-    title = "Choose your home";
+    title = "Choose a Home";
 
-    constructor(http) {
+    constructor(http, router) {
         this.http = http;
+        this.router = router;
     }
 
     activate() {
@@ -16,5 +18,10 @@ export class Home {
             .then(data => {
                 this.homes = data.home;
             });
+    }
+
+    enterHome(homeId) {
+        this.router.navigateToRoute("home");
+        this.router.navigateToRoute("viewHome", { "homeId" : homeId });
     }
 }

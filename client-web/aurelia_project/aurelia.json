@@ -163,6 +163,14 @@
             "name": "aurelia-mdl-plugin",
             "path": "../node_modules/aurelia-mdl-plugin/dist/amd",
             "main": "index"
+          },
+          {
+            "name": "dialog-polyfill",
+            "path": "../node_modules/dialog-polyfill",
+            "main": "dialog-polyfill",
+            "resources": [
+              "dialog-polyfill.css"
+            ]
           }
         ]
       }

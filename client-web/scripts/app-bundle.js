@@ -216,7 +216,7 @@ define('router-config',['exports', 'aurelia-auth', 'aurelia-framework', 'aurelia
                     route: 'home/new',
                     name: 'newHome',
                     moduleId: 'home/newHome',
-                    title: 'Login',
+                    title: 'Add Home',
                     auth: true
                 }, {
                     route: 'home/:homeId',
@@ -267,10 +267,10 @@ define('device/device',["exports", "aurelia-framework"], function (exports, _aur
     var Home = exports.Home = function Home() {
         _classCallCheck(this, Home);
 
-        this.title = "Configure your HomeConnect device";
+        this.title = "Configure Your HomeConnect Device";
     };
 });
-define('home/home',['exports', 'aurelia-framework', '../http'], function (exports, _aureliaFramework, _http) {
+define('home/home',['exports', 'aurelia-framework', 'aurelia-router', '../http'], function (exports, _aureliaFramework, _aureliaRouter, _http) {
     'use strict';
 
     Object.defineProperty(exports, "__esModule", {
@@ -286,13 +286,14 @@ define('home/home',['exports', 'aurelia-framework', '../http'], function (export
 
     var _dec, _class;
 
-    var Home = exports.Home = (_dec = (0, _aureliaFramework.inject)(_http.CustomHttpClient), _dec(_class = function () {
-        function Home(http) {
+    var Home = exports.Home = (_dec = (0, _aureliaFramework.inject)(_http.CustomHttpClient, _aureliaRouter.Router), _dec(_class = function () {
+        function Home(http, router) {
             _classCallCheck(this, Home);
 
-            this.title = "Choose your home";
+            this.title = "Choose a Home";
 
             this.http = http;
+            this.router = router;
         }
 
         Home.prototype.activate = function activate() {
@@ -303,6 +304,11 @@ define('home/home',['exports', 'aurelia-framework', '../http'], function (export
             }).then(function (data) {
                 _this.homes = data.home;
             });
+        };
+
+        Home.prototype.enterHome = function enterHome(homeId) {
+            this.router.navigateToRoute("home");
+            this.router.navigateToRoute("viewHome", { "homeId": homeId });
         };
 
         return Home;
@@ -328,7 +334,7 @@ define('home/newHome',['exports', 'aurelia-framework', 'aurelia-router', '../htt
         function newHome(http, router) {
             _classCallCheck(this, newHome);
 
-            this.title = "Add new home";
+            this.title = "Add Home";
             this.homeName = "";
             this.address = "";
 
@@ -353,19 +359,33 @@ define('home/newHome',['exports', 'aurelia-framework', 'aurelia-router', '../htt
                 if (data.home) {
                     _this.router.navigateToRoute("viewHome", { homeId: data.home._id });
                 }
+                _this.dialog.showModal();
             });
+        };
+
+        newHome.prototype.closeDialog = function closeDialog() {
+            this.message = "";
+            this.dialog.close();
         };
 
         return newHome;
     }()) || _class);
 });
-define('home/viewHome',['exports', 'aurelia-framework', 'aurelia-router', '../http'], function (exports, _aureliaFramework, _aureliaRouter, _http) {
+define('home/viewHome',['exports', 'aurelia-framework', 'aurelia-router', 'dialog-polyfill', '../http'], function (exports, _aureliaFramework, _aureliaRouter, _dialogPolyfill, _http) {
     'use strict';
 
     Object.defineProperty(exports, "__esModule", {
         value: true
     });
     exports.viewHome = undefined;
+
+    var _dialogPolyfill2 = _interopRequireDefault(_dialogPolyfill);
+
+    function _interopRequireDefault(obj) {
+        return obj && obj.__esModule ? obj : {
+            default: obj
+        };
+    }
 
     function _classCallCheck(instance, Constructor) {
         if (!(instance instanceof Constructor)) {
@@ -375,42 +395,71 @@ define('home/viewHome',['exports', 'aurelia-framework', 'aurelia-router', '../ht
 
     var _dec, _class;
 
-    var viewHome = exports.viewHome = (_dec = (0, _aureliaFramework.inject)(_http.CustomHttpClient, _aureliaRouter.Router), _dec(_class = function () {
-        function viewHome(http, router) {
+    var viewHome = exports.viewHome = (_dec = (0, _aureliaFramework.inject)(_http.CustomHttpClient, _aureliaRouter.Router, _dialogPolyfill2.default), _dec(_class = function () {
+        function viewHome(http, router, dialogPolyfill) {
+            var _this = this;
+
             _classCallCheck(this, viewHome);
+
+            this.show = {
+                roomList: {},
+                setRoom: function setRoom(roomId, show) {
+                    _this.show.roomList[roomId] = show;
+                    return _this.show.roomList[roomId];
+                },
+                toggleRoom: function toggleRoom(roomId) {
+                    _this.show.roomList[roomId] = !_this.show.roomList[roomId];
+                    return _this.show.roomList[roomId];
+                }
+            };
+            this.confirm = {
+                message: "",
+                warn: "",
+                button: {
+                    label: "Confirm",
+                    action: function action() {}
+                }
+            };
 
             this.http = http;
             this.router = router;
+            this.dialogPolyfill = dialogPolyfill;
         }
 
         viewHome.prototype.activate = function activate(params) {
-            var _this = this;
+            var _this2 = this;
 
             this.http.fetch("/home/" + params.homeId).then(function (response) {
                 return response.json();
             }).then(function (data) {
-                _this.message = data.message;
+                _this2.showMessage(data.message);
                 if (data.home) {
-                    _this.home = data.home;
+                    _this2.home = data.home;
                 }
             });
         };
 
+        viewHome.prototype.attached = function attached() {
+            this.dialogPolyfill.registerDialog(this.addRoomDialog);
+            this.dialogPolyfill.registerDialog(this.addTerminalDialog);
+            this.dialogPolyfill.registerDialog(this.confirmDialog);
+        };
+
         viewHome.prototype.removeHome = function removeHome() {
-            var _this2 = this;
+            var _this3 = this;
 
             this.http.fetch("/home/" + this.home._id, {
                 method: "DELETE"
             }).then(function (response) {
                 return response.json();
             }).then(function (data) {
-                _this2.message = data.message;
-                _this2.router.navigateToRoute("home");
+                _this3.showMessage(data.message);
+                _this3.router.navigateToRoute("home");
             });
         };
 
         viewHome.prototype.addRoom = function addRoom() {
-            var _this3 = this;
+            var _this4 = this;
 
             this.http.fetch("/home/" + this.home._id + "/room/newRoom", {
                 method: "PUT",
@@ -422,33 +471,34 @@ define('home/viewHome',['exports', 'aurelia-framework', 'aurelia-router', '../ht
             }).then(function (response) {
                 return response.json();
             }).then(function (data) {
-                _this3.message = data.message;
+                _this4.showMessage(data.message);
                 if (data.home) {
-                    _this3.home = data.home;
-                    _this3.newRoomName = "";
+                    _this4.home = data.home;
+                    _this4.newRoomName = "";
+                    _this4.closeAddRoomDialog();
                 }
             });
         };
 
         viewHome.prototype.removeRoom = function removeRoom(roomId) {
-            var _this4 = this;
+            var _this5 = this;
 
             this.http.fetch("/home/" + this.home._id + "/room/" + roomId, {
                 method: "DELETE"
             }).then(function (response) {
                 return response.json();
             }).then(function (data) {
-                _this4.message = data.message;
+                _this5.showMessage(data.message);
                 if (data.home) {
-                    _this4.home = data.home;
+                    _this5.home = data.home;
                 }
             });
         };
 
-        viewHome.prototype.addTerminal = function addTerminal(roomId) {
-            var _this5 = this;
+        viewHome.prototype.addTerminal = function addTerminal() {
+            var _this6 = this;
 
-            this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/newTerminal", {
+            this.http.fetch("/home/" + this.home._id + "/room/" + this.currentRoom + "/terminal/newTerminal", {
                 method: "PUT",
                 headers: {
                     "Accept": "application/json",
@@ -458,73 +508,166 @@ define('home/viewHome',['exports', 'aurelia-framework', 'aurelia-router', '../ht
             }).then(function (response) {
                 return response.json();
             }).then(function (data) {
-                _this5.message = data.message;
+                _this6.showMessage(data.message);
                 if (data.home) {
-                    _this5.home = data.home;
-                    _this5.newTerminalName = "";
-                    _this5.newTerminalType = "";
+                    _this6.home = data.home;
+                    _this6.newTerminalName = "";
+                    _this6.newTerminalType = "";
+                    _this6.closeAddTerminalDialog();
                 }
             });
         };
 
         viewHome.prototype.unlinkTerminal = function unlinkTerminal(roomId, terminalId) {
-            var _this6 = this;
+            var _this7 = this;
 
             this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId + "/unlink", {
                 method: "GET"
             }).then(function (response) {
                 return response.json();
             }).then(function (data) {
-                _this6.message = data.message;
-                if (data.home) {
-                    _this6.home = data.home;
-                }
-            });
-        };
-
-        viewHome.prototype.refreshTerminal = function refreshTerminal(roomId, terminalId) {
-            var _this7 = this;
-
-            this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId + "/refresh", {
-                method: "GET"
-            }).then(function (response) {
-                return response.json();
-            }).then(function (data) {
-                _this7.message = data.message;
+                _this7.showMessage(data.message);
                 if (data.home) {
                     _this7.home = data.home;
                 }
             });
         };
 
-        viewHome.prototype.removeTerminal = function removeTerminal(roomId, terminalId) {
+        viewHome.prototype.refreshTerminal = function refreshTerminal(roomId, terminalId) {
             var _this8 = this;
 
-            this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId, {
-                method: "DELETE"
+            this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId + "/refresh", {
+                method: "GET"
             }).then(function (response) {
                 return response.json();
             }).then(function (data) {
-                _this8.message = data.message;
+                _this8.showMessage(data.message);
                 if (data.home) {
                     _this8.home = data.home;
                 }
             });
         };
 
-        viewHome.prototype.setTerminalState = function setTerminalState(roomId, terminalId, state) {
+        viewHome.prototype.removeTerminal = function removeTerminal(roomId, terminalId) {
             var _this9 = this;
+
+            this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId, {
+                method: "DELETE"
+            }).then(function (response) {
+                return response.json();
+            }).then(function (data) {
+                _this9.showMessage(data.message);
+                if (data.home) {
+                    _this9.home = data.home;
+                }
+            });
+        };
+
+        viewHome.prototype.setTerminalState = function setTerminalState(roomId, terminalId, state) {
+            var _this10 = this;
 
             this.http.fetch("/home/" + this.home._id + "/room/" + roomId + "/terminal/" + terminalId + "/" + state, {
                 method: "GET"
             }).then(function (response) {
                 return response.json();
             }).then(function (data) {
-                _this9.message = data.message;
+                _this10.showMessage(data.message);
                 if (data.home) {
-                    _this9.home = data.home;
+                    _this10.home = data.home;
                 }
             });
+        };
+
+        viewHome.prototype.toggleTerminalState = function toggleTerminalState(roomId, terminal) {
+            terminal.state = !terminal.state;
+            this.setTerminalState(roomId, terminal._id, terminal.state ? "on" : "off");
+        };
+
+        viewHome.prototype.showAddTerminalDialog = function showAddTerminalDialog(roomId) {
+            this.currentRoom = roomId;
+            this.addTerminalDialog.showModal();
+        };
+
+        viewHome.prototype.closeAddTerminalDialog = function closeAddTerminalDialog() {
+            this.currentRoom = null;
+            this.newTerminalName = "";
+            this.newTerminalType = "";
+            this.addTerminalDialog.close();
+        };
+
+        viewHome.prototype.closeAddRoomDialog = function closeAddRoomDialog() {
+            this.newRoomName = "";
+            this.addRoomDialog.close();
+        };
+
+        viewHome.prototype.showConfirmDialog = function showConfirmDialog(type, object) {
+            var _this11 = this;
+
+            var that = this;
+            if (type === "home") {
+                this.confirm = {
+                    message: "Are you sure you want to delete Home " + object.homeName + " ?",
+                    warn: "This action cannot be undone. You will lose access to all rooms and terminals assigned to this Home.",
+                    button: {
+                        label: "DELETE",
+                        action: function (that) {
+                            return function () {
+                                that.removeHome();
+                            };
+                        }(that)
+                    }
+                };
+            } else if (type === "room") {
+                this.confirm = {
+                    message: "Are you sure you want to delete Room " + object.roomName + " ?",
+                    warn: "This action cannot be undone. You will lose access to all terminals assigned to this Room.",
+                    button: {
+                        label: "DELETE",
+                        action: function (that, roomId) {
+                            return function () {
+                                that.removeRoom(roomId);
+                            };
+                        }(that, object._id)
+                    }
+                };
+            } else if (type === "terminal-unlink") {
+                this.confirm = {
+                    message: "Are you sure you want to unlink Terminal " + object.terminal.terminalName + " (" + object.terminal.type + ") ?",
+                    warn: "This action cannot be undone. You will lose access to the switch from this Terminal.",
+                    button: {
+                        label: "UNLINK",
+                        action: function (that, roomId, terminalId) {
+                            return function () {
+                                that.unlinkTerminal(roomId, terminalId);
+                            };
+                        }(that, object.room._id, object.terminal._id)
+                    }
+                };
+            } else if (type === "terminal-remove") {
+                this.confirm = {
+                    message: "Are you sure you want to delete Terminal " + object.terminal.terminalName + " (" + object.terminal.type + ") ?",
+                    warn: "This action cannot be undone. You will lose access to the switch from this Terminal.",
+                    button: {
+                        label: "DELETE",
+                        action: function (that, roomId, terminalId) {
+                            return function () {
+                                _this11.removeTerminal(roomId, terminalId);
+                            };
+                        }(that, object.room._id, object.terminal._id)
+                    }
+                };
+            }
+            this.confirmDialog.showModal();
+        };
+
+        viewHome.prototype.closeConfirmDialog = function closeConfirmDialog() {
+            this.confirmDialog.close();
+        };
+
+        viewHome.prototype.showMessage = function showMessage(message) {
+            if (this.toastContainer) {
+                this.toastContainer.MaterialSnackbar.showSnackbar({ message: message });
+            }
         };
 
         return viewHome;
@@ -2151,15 +2294,19 @@ define('aurelia-auth/auth-filter',["exports"], function (exports) {
     return AuthFilterValueConverter;
   }();
 });
-define('text!app.html', ['module'], function(module) { module.exports = "<template>\n    <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/icon?family=Material+Icons\">\n    <require from=\"material-design-lite/material.min.css\"></require>\n    <require from='nav-bar/nav-bar'></require>\n    <require from='side-bar/side-bar'></require>\n    <require from=\"./app.css\"></require>\n    <div class=\"mdl-layout mdl-js-layout mdl-layout--fixed-header home-layout mdl-layout--no-desktop-drawer-button\">\n        <header class=\"mdl-layout__header mdl-layout__header--seamed mdl-color--grey-800\">\n            <div class=\"mdl-layout__header-row\">\n                <span class=\"mdl-layout-title\">Home Connect</span>\n                <div class=\"mdl-layout-spacer\"></div>\n                <nav-bar router.bind=\"router\"></nav-bar>\n            </div>\n        </header>\n        <div class=\"mdl-layout__drawer\">\n            <span class=\"mdl-layout-title\">Home Connect</span>\n            <side-bar router.bind=\"router\"></side-bar>\n        </div>\n        <main class=\"mdl-layout__content\">\n            <div class=\"page-content\">\n                <div class=\"container\">\n                    <router-view></router-view>\n                </div>\n            </div>\n        </main>\n    </div>\n</template>\n"; });
-define('text!app.css', ['module'], function(module) { module.exports = ".home-layout {\n  background: url(\"/assets/home.jpg\") center/cover; }\n\n.mdl-dialog__title {\n  font-size: 2rem; }\n\n.mdl-textfield__label:after {\n  background: gray; }\n"; });
-define('text!device/device.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <h4><a href=\"#\">Click here to download HomeConnect</a></h4>\n    <div>You will need to install HomeConnect to link your devices</div>\n    <div>The following are the steps required before you use HomeConnect</div>\n    <div>You can download the application while you do the following so you don't have to wait later</div>\n    <ol>\n        <li>Create your Home</li>\n        <li>Add Rooms to you Home</li>\n        <li>Add Lights, Fans and other end points in your Rooms</li>\n        <li>Download and install the HomeConnect application</li>\n        <li>Once installed, open the HomeConnect application</li>\n    </ol>\n    <div>Now that you have installed the HomeConnect application on your machine</div>\n    <div>The follow the below steps to link your devices to your HomeConnect account</div>\n    <ol>\n        <li>Sign in into the HomeConnect application using your HomeConnect account</li>\n        <li>Choose your HOME network, which will allow the devices to connect to the internet</li>\n        <ul>\n            <li>If you are prompted by your system to allow network modification access, grant the required access to connect to the device network</li>\n        </ul>\n        <li>Choose the device you wish to connect to using the password you received with the device</li>\n        <ul>\n            <li>In case you have lost the password, send us a mail at <a href=\"mailto:support@homeconnect.com\" target=\"_top\">support@homeconnect.com</a></li>\n        </ul>\n        <li>Select the end points you would like to connect the selected device to</li>\n        <li>Click SAVE</li>\n        <li>Sign into homeconnect.com and control your home</li>\n    </ol>\n    <p>Congratulations</p>\n    <div>We would like to know your experience with HomeConnect, while feedback/suggestions/queries are welcome we simply enjoy knowing that our product is useful to you and is a part of your home. So please spare a few minutes in writing to us at <a href=\"mailto:hi@homeconnect.com\" target=\"_top\">hi@homeconnect.com</a></div>\n    <hr>\n    <a route-href=\"route: home\" title=\"Go Home\">Home</a>\n</template>\n"; });
+define('text!app.html', ['module'], function(module) { module.exports = "<template>\n    <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/icon?family=Material+Icons\">\n    <require from=\"material-design-lite/material.min.css\"></require>\n    <require from=\"dialog-polyfill/dialog-polyfill.css\"></require>\n    <require from='nav-bar/nav-bar'></require>\n    <require from='side-bar/side-bar'></require>\n    <require from=\"./app.css\"></require>\n    <div class=\"mdl-layout mdl-js-layout mdl-layout--fixed-header home-layout mdl-layout--no-desktop-drawer-button\">\n        <header class=\"mdl-layout__header mdl-layout__header--seamed mdl-color--grey-800\">\n            <div class=\"mdl-layout__header-row\">\n                <a class=\"mdl-layout-title\" route-href=\"route: home\">Home Connect</a>\n                <div class=\"mdl-layout-spacer\"></div>\n                <nav-bar router.bind=\"router\"></nav-bar>\n            </div>\n        </header>\n        <div class=\"mdl-layout__drawer\">\n            <span class=\"mdl-layout-title\">Home Connect</span>\n            <side-bar router.bind=\"router\"></side-bar>\n        </div>\n        <main class=\"mdl-layout__content\">\n            <div class=\"page-content\">\n                <div class=\"container\">\n                    <router-view></router-view>\n                </div>\n            </div>\n        </main>\n    </div>\n</template>\n"; });
+define('text!app.css', ['module'], function(module) { module.exports = ".home-layout {\n  background: url(\"/assets/home.jpg\") center/cover; }\n\n.mdl-dialog__title {\n  font-size: 2rem; }\n\n.mdl-textfield .mdl-textfield__input {\n  color: rgba(0, 0, 0, 0.87); }\n\n.mdl-textfield .mdl-textfield__label:after {\n  background: gray; }\n\n.mdl-textfield.mdl-textfield--floating-label .mdl-textfield__label {\n  color: gray; }\n\n.mdl-layout-title {\n  cursor: pointer;\n  height: 100%;\n  line-height: 64px;\n  text-decoration: none;\n  color: white; }\n\n.mdl-navigation .mdl-navigation__link {\n  cursor: pointer;\n  color: rgba(255, 255, 255, 0.54); }\n  .mdl-navigation .mdl-navigation__link:hover {\n    color: #424242;\n    background-color: rgba(255, 255, 255, 0.54); }\n\n.input-dropdown-container .input-dropdown-label {\n  font-size: 12px;\n  color: gray; }\n\n.input-dropdown-container .input-dropdown {\n  width: 100%;\n  background-color: white;\n  color: #747474;\n  position: relative;\n  height: 36px;\n  line-height: 36px;\n  font-size: 16px;\n  outline: 0; }\n\ndiv._dialog_overlay {\n  z-index: 0 !important; }\n"; });
+define('text!device/device.html', ['module'], function(module) { module.exports = "<template>\n<require from=\"./device.css\"></require>\n<div class=\"mdl-card mdl-shadow--2dp device-card\">\n  <div class=\"mdl-card__title device-card-header\">\n    <h2 class=\"mdl-card__title-text device-card-title\">${title}</h2>\n  </div>\n  <div class=\"mdl-card__supporting-text device-card-text\">\n    <div>You will need to install HomeConnect on your computer to configure your devices</div>\n    <div>The following are the steps required before you use HomeConnect Device Configurator</div>\n    <ol>\n        <li>Create your Home</li>\n        <li>Add Rooms to you Home</li>\n        <li>Add Lights, Fans and other end points in your Rooms</li>\n        <li>Download and install the HomeConnect application</li>\n        <li>Once installed, open the HomeConnect application</li>\n    </ol>\n    <div>Now that you have installed the HomeConnect application on your machine</div>\n    <div>The follow the below steps to link your devices to your HomeConnect Account</div>\n    <ol>\n        <li>Sign in into the HomeConnect application using your HomeConnect Account</li>\n        <li>Choose your HOME network, which will allow the devices to connect to the internet</li>\n        <ul>\n            <li>If you are prompted by your system to allow network modification access, grant the required access to connect to the device network</li>\n        </ul>\n        <li>Choose the device you wish to connect to using the password you received with the device</li>\n        <ul>\n            <li>In case you have lost the password, send us a mail at <a href=\"mailto:support@homeconnect.com\" target=\"_top\">support@homeconnect.com</a></li>\n        </ul>\n        <li>Select the end points you would like to connect the selected device to</li>\n        <li>Click SAVE</li>\n        <li>Sign into <a route-href=\"route: home\" title=\"Sign In HomeConnect\">homeconnect.com</a> to control your Home</li>\n    </ol>\n    <p>Congratulations</p>\n    <div>We would like to know your experience with HomeConnect, while feedback/suggestions/queries are welcome we simply enjoy knowing that our product is useful to you and is a part of your Home. So please spare a few minutes in writing to us at <a href=\"mailto:hi@homeconnect.com\" target=\"_top\">hi@homeconnect.com</a></div>\n  </div>\n  <div class=\"mdl-card__actions mdl-card--border\">\n    <a class=\"mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect\" href=\"#\">Download HomeConnect</a>\n    <a class=\"mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect\" route-href=\"route: home\" title=\"Go Home\">Home</a>\n  </div>\n</div>\n</template>\n"; });
+define('text!home/home.css', ['module'], function(module) { module.exports = ".home-list,\n.home-list-header {\n  width: 70%;\n  margin: auto; }\n\n.home-list-header {\n  font-weight: 100;\n  letter-spacing: 1px;\n  margin-top: 5%;\n  box-sizing: border-box;\n  height: 64px;\n  padding: 16px;\n  color: white;\n  background-color: #90a4ae; }\n\n.home-list {\n  box-sizing: border-box;\n  list-style: none;\n  padding: 0;\n  background-color: white; }\n  .home-list .home-item-container:hover, .home-list .home-item-container:active {\n    background-color: #eceff1; }\n  .home-list .home-item-container .home-list-item {\n    box-sizing: border-box;\n    cursor: pointer;\n    width: 100%;\n    text-decoration: none;\n    color: inherit; }\n    .home-list .home-item-container .home-list-item:hover .home-actions-container .home-action-container .home-icon, .home-list .home-item-container .home-list-item:active .home-actions-container .home-action-container .home-icon {\n      color: rgba(0, 0, 0, 0.54); }\n    .home-list .home-item-container .home-list-item .home-icon-container,\n    .home-list .home-item-container .home-list-item .home-action-container {\n      text-align: center;\n      cursor: pointer; }\n    .home-list .home-item-container .home-list-item .home-icon {\n      font-size: 32px;\n      text-align: center;\n      line-height: 40px;\n      width: 40px;\n      border-radius: 50px;\n      color: rgba(0, 0, 0, 0.13); }\n    .home-list .home-item-container .home-list-item .home-icon-container .home-icon {\n      color: rgba(0, 0, 0, 0.54);\n      background-color: rgba(0, 0, 0, 0.13); }\n    .home-list .home-item-container .home-list-item .home-title-container .home-title {\n      font-size: 20px; }\n    .home-list .home-item-container .home-list-item .home-title-container .home-sub-title {\n      color: rgba(0, 0, 0, 0.54); }\n    .home-list .home-item-container .home-list-item .home-actions-container {\n      text-align: right; }\n      .home-list .home-item-container .home-list-item .home-actions-container .home-action-container {\n        display: inline-block; }\n  .home-list .add-home-row {\n    border-top: 1px solid rgba(0, 0, 0, 0.24);\n    cursor: pointer; }\n    .home-list .add-home-row:hover, .home-list .add-home-row:active {\n      background-color: #eceff1; }\n    .home-list .add-home-row .home-list-add-home {\n      width: 100%;\n      text-decoration: none;\n      color: inherit; }\n"; });
+define('text!home/home.html', ['module'], function(module) { module.exports = "<template>\n    <require from=\"./home.css\"></require>\n    <h4 class=\"home-list-header\">${title}</h4>\n    <ul class=\"home-list\">\n        <li class=\"home-item-container\" repeat.for=\"home of homes\">\n            <div class=\"mdl-grid home-list-item\" click.delegate=\"enterHome(home._id)\" title=\"Enter Home\">\n                <div class=\"mdl-cell mdl-cell--1-col home-icon-container\">\n                    <i class=\"material-icons home-icon\">home</i>\n                </div>\n                <div class=\"mdl-cell mdl-cell--7-col home-title-container\">\n                    <div class=\"home-title\">${home.homeName}</div>\n                    <div class=\"home-sub-title\">${home.rooms.length} Room${home.rooms.length > 1 ? \"s\" : \"\"}</div>\n                </div>\n                <div class=\"mdl-cell mdl-cell--4-col home-actions-container\">\n                    <div class=\"home-action-container\">\n                        <i class=\"material-icons home-icon\">chevron_right</i>\n                    </div>\n                </div>\n            </div>\n        </li>\n        <li class=\"mdl-list__item add-home-row\">\n            <a class=\"home-list-add-home\" route-href=\"route: newHome\" title=\"Add Home\">\n                <span class=\"mdl-list__item-primary-content\">\n                    <i class=\"material-icons mdl-list__item-icon\">add</i>\n                    <span>Add Home</span>\n                </span>\n            </a>\n        </li>\n    </ul>\n</template>\n"; });
+define('text!home/newHome.css', ['module'], function(module) { module.exports = ".new-home-layout {\n  align-items: center;\n  justify-content: center; }\n  .new-home-layout .new-home-layout-content {\n    padding: 24px;\n    flex: none; }\n"; });
+define('text!home/newHome.html', ['module'], function(module) { module.exports = "<template>\n    <require from=\"./newHome.css\"></require>\n    <div class=\"mdl-layout mdl-js-layout new-home-layout\" show.bind=\"!message\">\n        <main class=\"mdl-layout__content new-home-layout-content\">\n            <div class=\"mdl-card mdl-shadow--6dp\">\n                <form role=\"form\" submit.delegate=\"add()\">\n                    <div class=\"mdl-card__title mdl-color--grey-300\">\n                        <h2 class=\"mdl-card__title-text\">${title}</h2>\n                    </div>\n                    <div class=\"mdl-card__supporting-text\">\n                        <div class=\"mdl-textfield mdl-js-textfield\">\n                            <input class=\"mdl-textfield__input mdl-textfield__input--yellow\" type=\"text\" name=\"homeName\" id=\"homeName\" value.bind=\"homeName\" />\n                            <label class=\"mdl-textfield__label\" for=\"homeName\">Home Name</label>\n                        </div>\n                        <div class=\"mdl-textfield mdl-js-textfield\">\n                            <textarea class=\"mdl-textfield__input\" type=\"text\" name=\"address\" rows= \"4\" id=\"address\" value.bind=\"address\"></textarea>\n                            <label class=\"mdl-textfield__label\" for=\"address\">Address</label>\n                        </div>\n                    </div>\n                    <div class=\"mdl-card__actions mdl-card--border\">\n                        <button type=\"submit\" class=\"mdl-button mdl-js-button mdl-js-ripple-effect\">Add</button>\n                        <a class=\"mdl-button mdl-js-button mdl-js-ripple-effect\" route-href=\"route: home\" title=\"Cancel\">Back</a>\n                    </div>\n                </form>\n            </div>\n        </main>\n    </div>\n    <dialog ref=\"dialog\" id=\"dialog\" class=\"mdl-dialog\">\n        <h3 class=\"mdl-dialog__title\">Action Failed</h3>\n        <div class=\"mdl-dialog__content\">\n            <p>${message}</p>\n        </div>\n        <div class=\"mdl-dialog__actions\">\n            <button type=\"button\" class=\"mdl-button\" click.delegate=\"closeDialog()\">Close</button>\n        </div>\n    </dialog>\n</template>\n"; });
+define('text!home/viewHome.css', ['module'], function(module) { module.exports = ".room-list,\n.home-header,\n.home-address {\n  width: 90%;\n  margin: auto; }\n\n.home-header {\n  font-weight: 100;\n  letter-spacing: 1px;\n  margin-top: 5%;\n  box-sizing: border-box;\n  height: 64px;\n  background-color: #90a4ae;\n  color: white; }\n  .home-header .home-header-label,\n  .home-header .home-header-back-icon-container {\n    display: inline-block; }\n  .home-header .home-header-back-icon-container {\n    text-decoration: none;\n    width: 50px;\n    height: 64px;\n    line-height: 64px;\n    cursor: pointer;\n    color: #90a4ae;\n    background-color: #607d8b; }\n    .home-header .home-header-back-icon-container:hover, .home-header .home-header-back-icon-container:active {\n      color: white; }\n    .home-header .home-header-back-icon-container .home-header-back-icon {\n      font-size: 36px;\n      line-height: 64px;\n      width: 100%;\n      text-align: center; }\n  .home-header .home-header-label,\n  .home-header .home-actions-container {\n    box-sizing: border-box;\n    display: inline-block;\n    vertical-align: top;\n    height: 100%;\n    line-height: 36px; }\n  .home-header .home-header-label {\n    padding: 16px; }\n  .home-header .home-actions-container {\n    background-color: #607d8b;\n    float: right; }\n    .home-header .home-actions-container .home-action-container {\n      cursor: pointer;\n      padding: 16px;\n      height: 100%;\n      box-sizing: border-box; }\n      .home-header .home-actions-container .home-action-container:hover .home-icon.home-delete-icon, .home-header .home-actions-container .home-action-container:active .home-icon.home-delete-icon {\n        color: #f44336; }\n      .home-header .home-actions-container .home-action-container .home-icon {\n        font-size: 32px;\n        color: #90a4ae; }\n        .home-header .home-actions-container .home-action-container .home-icon.home-delete-icon:hover, .home-header .home-actions-container .home-action-container .home-icon.home-delete-icon:active {\n          color: #f44336; }\n\n.home-address {\n  font-weight: 100;\n  letter-spacing: 1px;\n  box-sizing: border-box;\n  height: 48px;\n  padding: 8px 16px;\n  font-size: 20px;\n  background-color: #b0bec5;\n  color: white; }\n\n.room-list {\n  box-sizing: border-box;\n  padding: 0;\n  list-style: none;\n  background-color: white; }\n  .room-list .room-item {\n    padding: 16px; }\n    .room-list .room-item .room-header {\n      border: 1px solid rgba(0, 0, 0, 0.24); }\n      .room-list .room-item .room-header.room-closed {\n        border-bottom: none; }\n      .room-list .room-item .room-header .room-avatar-icon,\n      .room-list .room-item .room-header .room-icon {\n        color: rgba(0, 0, 0, 0.54); }\n      .room-list .room-item .room-header .room-avatar-icon {\n        width: 100%;\n        line-height: 40px;\n        text-align: center;\n        font-size: 40px; }\n      .room-list .room-item .room-header .room-title-container {\n        cursor: pointer; }\n        .room-list .room-item .room-header .room-title-container .room-title {\n          font-size: 24px;\n          line-height: 24px;\n          color: rgba(0, 0, 0, 0.87);\n          margin-bottom: 4px; }\n        .room-list .room-item .room-header .room-title-container .room-sub-title {\n          font-size: 12px;\n          line-height: 12px;\n          color: rgba(0, 0, 0, 0.54); }\n        .room-list .room-item .room-header .room-title-container:hover + .room-actions-container .room-action-container .room-icon.room-expand-icon {\n          color: #64dd17; }\n        .room-list .room-item .room-header .room-title-container:hover + .room-actions-container .room-action-container .room-icon.room-collapse-icon {\n          color: #f44336; }\n      .room-list .room-item .room-header .room-actions-container {\n        text-align: right;\n        padding-right: 40px; }\n        .room-list .room-item .room-header .room-actions-container .room-action-container {\n          cursor: pointer;\n          display: inline-block;\n          width: 64px; }\n          .room-list .room-item .room-header .room-actions-container .room-action-container .room-icon {\n            font-size: 32px; }\n            .room-list .room-item .room-header .room-actions-container .room-action-container .room-icon.room-expand-icon:hover, .room-list .room-item .room-header .room-actions-container .room-action-container .room-icon.room-expand-icon:active {\n              color: #64dd17; }\n            .room-list .room-item .room-header .room-actions-container .room-action-container .room-icon.room-collapse-icon:hover, .room-list .room-item .room-header .room-actions-container .room-action-container .room-icon.room-collapse-icon:active {\n              color: #f44336; }\n            .room-list .room-item .room-header .room-actions-container .room-action-container .room-icon.room-delete-icon:hover, .room-list .room-item .room-header .room-actions-container .room-action-container .room-icon.room-delete-icon:active {\n              color: #f44336; }\n    .room-list .room-item .room-content {\n      border: 1px solid rgba(0, 0, 0, 0.24);\n      border-top: none;\n      padding: 16px;\n      padding-top: 1px; }\n      .room-list .room-item .room-content .terminal-item {\n        min-height: 48px;\n        border: 1px solid rgba(0, 0, 0, 0.24);\n        border-radius: 10px;\n        margin-top: 5px; }\n        .room-list .room-item .room-content .terminal-item .terminal-icon,\n        .room-list .room-item .room-content .terminal-item .terminal-name,\n        .room-list .room-item .room-content .terminal-item .terminal-actions {\n          line-height: 28px; }\n        .room-list .room-item .room-content .terminal-item .terminal-icon {\n          font-size: 28px;\n          color: rgba(0, 0, 0, 0.54); }\n        .room-list .room-item .room-content .terminal-item .terminal-name {\n          font-size: 20px;\n          cursor: pointer; }\n        .room-list .room-item .room-content .terminal-item .terminal-actions {\n          text-align: right; }\n          .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container {\n            display: inline-block;\n            vertical-align: top;\n            width: 64px;\n            text-align: left; }\n            .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container,\n            .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container a {\n              cursor: pointer; }\n            .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container .terminal-icon {\n              margin: 0 10px; }\n              .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container .terminal-icon.terminal-link-icon:hover, .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container .terminal-icon.terminal-link-icon:active {\n                color: #2196f3; }\n              .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container .terminal-icon.terminal-refresh-icon:hover, .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container .terminal-icon.terminal-refresh-icon:active {\n                color: #f57f17; }\n              .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container .terminal-icon.terminal-delete-icon:hover, .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container .terminal-icon.terminal-delete-icon:active, .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container .terminal-icon.terminal-unlink-icon:hover, .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container .terminal-icon.terminal-unlink-icon:active {\n                color: #f44336; }\n              .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container .terminal-icon.terminal-unlink-icon {\n                position: relative; }\n                .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container .terminal-icon.terminal-unlink-icon:before {\n                  position: absolute;\n                  content: \"\";\n                  left: 0;\n                  top: 48%;\n                  right: 0;\n                  border-top: 3px solid;\n                  border-color: inherit;\n                  -webkit-transform: rotate(-15deg);\n                  -moz-transform: rotate(-15deg);\n                  -ms-transform: rotate(-15deg);\n                  -o-transform: rotate(-15deg);\n                  transform: rotate(-15deg); }\n            .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container .terminal-switch-control {\n              position: relative;\n              left: 8px; }\n              .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container .terminal-switch-control.mdl-switch .mdl-switch__thumb {\n                background-color: white; }\n              .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container .terminal-switch-control.mdl-switch .mdl-ripple {\n                background-color: gray; }\n              .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container .terminal-switch-control.mdl-switch.is-checked .mdl-switch__track {\n                background-color: rgba(100, 221, 80, 0.54); }\n              .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container .terminal-switch-control.mdl-switch.is-checked .mdl-switch__thumb {\n                background-color: #64dd17; }\n              .room-list .room-item .room-content .terminal-item .terminal-actions .terminal-action-container .terminal-switch-control.mdl-switch.is-checked .mdl-ripple {\n                background-color: #64dd17; }\n        .room-list .room-item .room-content .terminal-item.terminal-item-add-terminal .add-terminal-trigger-container {\n          height: 100%;\n          line-height: 52px;\n          cursor: pointer; }\n          .room-list .room-item .room-content .terminal-item.terminal-item-add-terminal .add-terminal-trigger-container .add-terminal-trigger-icon,\n          .room-list .room-item .room-content .terminal-item.terminal-item-add-terminal .add-terminal-trigger-container .add-terminal-trigger-label {\n            display: inline-block;\n            height: inherit;\n            line-height: inherit;\n            vertical-align: top; }\n          .room-list .room-item .room-content .terminal-item.terminal-item-add-terminal .add-terminal-trigger-container .add-terminal-trigger-icon {\n            width: 56px;\n            text-align: center; }\n  .room-list .add-room-row {\n    border-top: 1px solid rgba(0, 0, 0, 0.24);\n    cursor: pointer; }\n\n.confirm-dialog-warn {\n  margin-top: 10px;\n  font-style: italic;\n  color: #f44336; }\n\n.confirm-button {\n  color: #f44336; }\n"; });
+define('text!home/viewHome.html', ['module'], function(module) { module.exports = "<template>\n    <require from=\"./viewHome.css\"></require>\n    <h4 class=\"home-header\">\n        <a route-href=\"route: home\" title=\"Back\" class=\"home-header-back-icon-container\">\n            <i class=\"material-icons home-header-back-icon\">chevron_left</i>\n        </a><div class=\"home-header-label\">${home.homeName}</div><div class=\"home-actions-container\">\n            <div class=\"home-action-container\">\n                <div click.delegate=\"showConfirmDialog('home', home)\" title=\"Delete Home\"><i class=\"material-icons home-icon home-delete-icon\">delete</i></div>\n            </div>\n        </div>\n    </h4>\n    <h4 class=\"home-address\" if.bind=\"home.address.length > 0\">${home.address}</h4>\n    <ul class=\"room-list\">\n        <li class=\"room-item\" repeat.for=\"room of home.rooms\">\n            <div class=\"mdl-grid room-header ${ show.roomList[room._id] ? 'room-closed' : 'room-open' }\">\n                <div class=\"mdl-cell mdl-cell--1-col\">\n                    <i class=\"material-icons room-avatar-icon\">dashboard</i>\n                </div>\n                <div class=\"mdl-cell mdl-cell--7-col room-title-container\" click.delegate=\"show.toggleRoom(room._id)\">\n                    <div class=\"room-title\">${room.roomName}</div>\n                    <div class=\"room-sub-title\">${room.terminals.length} Terminal${room.terminals.length > 1 ? \"s\" : \"\"}</div>\n                </div>\n                <div class=\"mdl-cell mdl-cell--4-col room-actions-container\">\n                    <div class=\"room-action-container\" show.bind=\"show.roomList[room._id]\">\n                        <div click.delegate=\"show.setRoom(room._id, false)\" title=\"Leave Room\"><i class=\"material-icons room-icon room-collapse-icon\">expand_less</i></div>\n                    </div>\n                    <div class=\"room-action-container\" show.bind=\"!show.roomList[room._id]\">\n                        <div click.delegate=\"show.setRoom(room._id, true)\" title=\"Enter Room\"><i class=\"material-icons room-icon room-expand-icon\">expand_more</i></div>\n                    </div>\n                    <div class=\"room-action-container\">\n                        <div click.delegate=\"showConfirmDialog('room', room)\" title=\"Delete Room\"><i class=\"material-icons room-icon room-delete-icon\">delete</i></div>\n                    </div>\n                </div>\n            </div>\n            <div class=\"room-content\" show.bind=\"show.roomList[room._id]\">\n                <div class=\"mdl-grid terminal-item\" repeat.for=\"terminal of room.terminals\">\n                    <div class=\"mdl-cell mdl-cell--1-col terminal-type\">\n                        <i class=\"material-icons terminal-icon\" show.bind=\"terminal.type === 'light'\">lightbulb_outline</i>\n                        <i class=\"material-icons terminal-icon\" show.bind=\"terminal.type === 'fan'\">toys</i>\n                    </div>\n                    <div class=\"mdl-cell mdl-cell--5-col terminal-name\" click.delegate=\"toggleTerminalState(room._id, terminal)\">${terminal.terminalName}</div>\n                    <div class=\"mdl-cell mdl-cell--6-col terminal-actions\">\n                        <div if.bind=\"terminal.linked\">\n                            <div class=\"terminal-action-container\" if.bind=\"terminal.synced\">\n                                <label class=\"mdl-switch mdl-js-switch mdl-js-ripple-effect terminal-switch-control\" for=\"terminal-${terminal._id}-toggle\">\n                                    <input type=\"checkbox\" id=\"terminal-${terminal._id}-toggle\" class=\"mdl-switch__input\" checked.bind=\"terminal.state\" change.delegate=\"setTerminalState(room._id, terminal._id, (terminal.state ? 'on' : 'off'))\">\n                                    <span class=\"mdl-switch__label\"></span>\n                                </label>\n                            </div>\n                            <div class=\"terminal-action-container\" if.bind=\"!terminal.synced\">\n                                <div click.delegate=\"refreshTerminal(room._id, terminal._id)\" title=\"Refresh Terminal State\"><i class=\"material-icons terminal-icon terminal-refresh-icon\">refresh</i></div>\n                            </div>\n                            <div class=\"terminal-action-container\" class=\"terminal-action-container\">\n                                <div click.delegate=\"showConfirmDialog('terminal-unlink', { 'room' : room, 'terminal' : terminal })\" title=\"Unlink from Device\"><i class=\"material-icons terminal-icon terminal-unlink-icon\">link</i></div>\n                            </div>\n                        </div>\n                        <div if.bind=\"!terminal.linked\">\n                            <div class=\"terminal-action-container\">\n                                <a route-href=\"route: device\" title=\"Link to Device\"><i class=\"material-icons terminal-icon terminal-link-icon\">link</i></a>\n                            </div>\n                            <div class=\"terminal-action-container\">\n                                <div click.delegate=\"showConfirmDialog('terminal-remove', { 'room' : room, 'terminal' : terminal })\" title=\"Delete Terminal\"><i class=\"material-icons terminal-icon terminal-delete-icon\">delete</i></div>\n                            </div>\n                        </div>\n                    </div>\n                </div>\n                <div class=\"terminal-item terminal-item-add-terminal\">\n                    <div class=\"add-terminal-trigger-container\" click.delegate=\"showAddTerminalDialog(room._id)\" title=\"Add Terminal\">\n                        <i class=\"material-icons add-terminal-trigger-icon\">add</i>\n                        <div class=\"add-terminal-trigger-label\">Add Terminal</div>\n                    </div>\n                </div>\n            </div>\n        </li>\n        <li class=\"mdl-list__item add-room-row\" click.delegate=\"addRoomDialog.showModal()\">\n            <span class=\"mdl-list__item-primary-content\">\n                <i class=\"material-icons mdl-list__item-icon\">add</i>\n                <span>Add Room</span>\n            </span>\n        </li>\n    </ul>\n    <dialog ref=\"addTerminalDialog\" id=\"addTerminalDialog\" class=\"mdl-dialog\">\n        <h3 class=\"mdl-dialog__title\">Add Terminal</h3>\n        <div class=\"mdl-dialog__content\">\n            <div class=\"mdl-textfield mdl-js-textfield mdl-textfield--floating-label\">\n                <input class=\"mdl-textfield__input\" type=\"text\" name=\"newTerminalName\" id=\"newTerminalName\" value.bind=\"newTerminalName\" />\n                <label class=\"mdl-textfield__label\" for=\"newTerminalName\">New Terminal Name</label>\n            </div>\n            <div class=\"input-dropdown-container\">\n                <label class=\"input-dropdown-label\">Terminal Type</label>\n                <select class=\"input-dropdown\" name=\"newTerminalType\" id=\"newTerminalType\" value.bind=\"newTerminalType\">\n                    <option value=\"\">Select</option>\n                    <option value=\"light\">Light</option>\n                    <option value=\"fan\">Fan</option>\n                </select>\n            </div>\n        </div>\n        <div class=\"mdl-dialog__actions\">\n            <button type=\"button\" class=\"mdl-button\" click.delegate=\"addTerminal()\">Add Terminal</button>\n            <button type=\"button\" class=\"mdl-button\" click.delegate=\"closeAddTerminalDialog()\">Close</button>\n        </div>\n    </dialog>\n    <dialog ref=\"addRoomDialog\" id=\"addRoomDialog\" class=\"mdl-dialog\">\n        <h3 class=\"mdl-dialog__title\">Add Room</h3>\n        <div class=\"mdl-dialog__content\">\n            <div class=\"mdl-textfield mdl-js-textfield mdl-textfield--floating-label\">\n                <input class=\"mdl-textfield__input\" type=\"text\" name=\"newRoomName\" id=\"newRoomName\" value.bind=\"newRoomName\" />\n                <label class=\"mdl-textfield__label\" for=\"newRoomName\">New Room Name</label>\n            </div>\n        </div>\n        <div class=\"mdl-dialog__actions\">\n            <button type=\"button\" class=\"mdl-button\" click.delegate=\"addRoom()\">Add Room</button>\n            <button type=\"button\" class=\"mdl-button\" click.delegate=\"closeAddRoomDialog()\">Close</button>\n        </div>\n    </dialog>\n    <dialog ref=\"confirmDialog\" id=\"confirmDialog\" class=\"mdl-dialog\">\n        <h3 class=\"mdl-dialog__title\">Confirm Action</h3>\n        <div class=\"mdl-dialog__content\">\n            <div class=\"confirm-dialog-message\">${confirm.message}</div>\n            <div class=\"confirm-dialog-warn\">${confirm.warn}</div>\n        </div>\n        <div class=\"mdl-dialog__actions\">\n            <button type=\"button\" class=\"mdl-button confirm-button\" click.delegate=\"confirm.button.action()\">${confirm.button.label}</button>\n            <button type=\"button\" class=\"mdl-button cancel-button\" click.delegate=\"closeConfirmDialog()\">Cancel</button>\n        </div>\n    </dialog>\n    <div ref=\"toastContainer\" id=\"toastContainer\" class=\"mdl-js-snackbar mdl-snackbar\">\n        <div class=\"mdl-snackbar__text\"></div>\n        <button class=\"mdl-snackbar__action\" type=\"button\"></button>\n    </div>\n</template>\n"; });
 define('text!login/login.css', ['module'], function(module) { module.exports = ".login-layout {\n  align-items: center;\n  justify-content: center; }\n  .login-layout .login-layout-content {\n    padding: 24px;\n    flex: none; }\n"; });
-define('text!home/home.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <div repeat.for=\"home of homes\">\n        <a route-href=\"route: viewHome; params.bind: { homeId: home._id }\" title=\"View Home\">${home.homeName}</a>\n    </div>\n    <hr>\n    <a route-href=\"route: newHome\" title=\"Add A Home\">Add HOME</a>\n</template>\n"; });
-define('text!home/newHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${title}</h1>\n    <form role=\"form\" submit.delegate=\"add()\">\n        <div>\n            <div>\n                <label for=\"homeName\">Home Name</label>\n                <input name=\"homeName\" id=\"homeName\" type=\"text\" value.bind=\"homeName\">\n            </div>\n        </div>\n        <div>\n            <div>\n                <label for=\"address\">Address</label>\n                <input name=\"address\" id=\"address\" type=\"text\" value.bind=\"address\">\n            </div>\n        </div>\n        <div>\n            <button type=\"submit\">Add</button>\n        </div>\n    </form>\n    <hr>\n    <div>${message}</div>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
-define('text!home/viewHome.html', ['module'], function(module) { module.exports = "<template>\n    <h1>${home.homeName}</h1>\n    <div>${home.address}</div>\n    <div repeat.for=\"room of home.rooms\">\n        <div>${room.roomName}</div>\n        <div repeat.for=\"terminal of room.terminals\">\n            <div>${terminal.terminalName}</div>\n            <div>${terminal.type}</div>\n            <div>${terminal.state}</div>\n            <div if.bind=\"terminal.linked\">\n                <div if.bind=\"terminal.synced\">\n                    <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'toggle')\">Toggle</button>\n                    <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'on')\" if.bind=\"!terminal.state\">On</button>\n                    <button type=\"button\" click.delegate=\"setTerminalState(room._id, terminal._id, 'off')\" if.bind=\"terminal.state\">Off</button>\n                </div>\n                <div if.bind=\"!terminal.synced\">\n                    <button type=\"button\" click.delegate=\"refreshTerminal(room._id, terminal._id)\">Refresh</button>\n                </div>\n                <div>\n                    <button type=\"button\" click.delegate=\"unlinkTerminal(room._id, terminal._id)\">Unlink Device</button>\n                </div>\n            </div>\n            <div if.bind=\"!terminal.linked\">\n                <div>\n                    <a route-href=\"route: device\" title=\"Link Device\">Link Device</a>\n                </div>\n                <div>\n                    <button type=\"button\" click.delegate=\"removeTerminal(room._id, terminal._id)\">Remove Terminal</button>\n                </div>\n            </div>\n            <hr>\n        </div>\n        <div>\n            <div>\n                <input name=\"newTerminalName\" id=\"newTerminalName\" type=\"text\" value.bind=\"$parent.newTerminalName\">\n            </div>\n            <div>\n                <select name=\"newTerminalType\" id=\"newTerminalType\" value.bind=\"$parent.newTerminalType\">\n                    <option value=\"\">Select</option>\n                    <option value=\"light\">Light</option>\n                    <option value=\"fan\">Fan</option>\n                </select>\n            </div>\n            <div>\n                <button type=\"button\" click.delegate=\"addTerminal(room._id)\">Add Terminal</button>\n            </div>\n        </div>\n        <button type=\"button\" click.delegate=\"removeRoom(room._id)\">Remove Room</button>\n        <hr>\n    </div>\n    <div>\n        <input name=\"newRoomName\" id=\"newRoomName\" type=\"text\" value.bind=\"newRoomName\">\n        <button type=\"button\" click.delegate=\"addRoom()\">Add Room</button>\n    </div>\n    <div>\n        <button type=\"button\" click.delegate=\"removeHome()\">DELETE</button>\n    </div>\n    <hr>\n    <div>${message}</div>\n    <a route-href=\"route: home\" title=\"Cancel\">Back</a>\n</template>\n"; });
 define('text!login/login.html', ['module'], function(module) { module.exports = "<template>\n    <require from=\"./login.css\"></require>\n    <div class=\"mdl-layout mdl-js-layout login-layout\" show.bind=\"!error\">\n        <main class=\"mdl-layout__content login-layout-content\">\n            <div class=\"mdl-card mdl-shadow--6dp\">\n                <form role=\"form\" submit.delegate=\"login()\">\n                    <div class=\"mdl-card__title mdl-color--grey-300\">\n                        <h2 class=\"mdl-card__title-text\">${title}</h2>\n                    </div>\n                    <div class=\"mdl-card__supporting-text\">\n                            <div class=\"mdl-textfield mdl-js-textfield\">\n                                <input class=\"mdl-textfield__input mdl-textfield__input--yellow\" type=\"text\" name=\"userName\" id=\"userName\" value.bind=\"userName\" />\n                                <label class=\"mdl-textfield__label\" for=\"userName\">User Name</label>\n                            </div>\n                            <div class=\"mdl-textfield mdl-js-textfield\">\n                                <input class=\"mdl-textfield__input\" type=\"password\" name=\"password\" id=\"password\" value.bind=\"password\" />\n                                <label class=\"mdl-textfield__label\" for=\"password\">Passcode</label>\n                            </div>\n                    </div>\n                    <div class=\"mdl-card__actions mdl-card--border\">\n                        <button type=\"submit\" class=\"mdl-button mdl-js-button mdl-js-ripple-effect\">Sign In</button>\n                    </div>\n                </form>\n            </div>\n        </main>\n    </div>\n    <dialog ref=\"dialog\" id=\"dialog\" class=\"mdl-dialog\">\n        <h3 class=\"mdl-dialog__title\">Access Denied</h3>\n        <div class=\"mdl-dialog__content\">\n            <p>${error}</p>\n        </div>\n        <div class=\"mdl-dialog__actions\">\n            <button type=\"button\" class=\"mdl-button\" click.delegate=\"closeDialog()\">Close</button>\n        </div>\n    </dialog>\n</template>\n"; });
 define('text!logout/logout.html', ['module'], function(module) { module.exports = "<!-- Aurelia expects a template for each route.\nWe don't actuall need a template for logging out, \nbut we provide an empty one to not get any errors -->\n<template></template>"; });
 define('text!nav-bar/nav-bar.html', ['module'], function(module) { module.exports = "<template>\n    <nav class=\"mdl-navigation mdl-layout--large-screen-only\">\n        <a class=\"mdl-navigation__link\" route-href=\"route: logout\" if.bind=\"isAuthenticated\">Logout</a>\n    </nav>\n</template>\n"; });
 define('text!side-bar/side-bar.html', ['module'], function(module) { module.exports = "<template>\n    <nav class=\"mdl-navigation\">\n        <a class=\"mdl-navigation__link\" route-href=\"route: logout\" if.bind=\"isAuthenticated\">Logout</a>\n    </nav>\n</template>\n"; });
+define('text!device/device.css', ['module'], function(module) { module.exports = ".device-card {\n  width: 80%;\n  max-width: 800px;\n  margin: 5% auto; }\n  .device-card > .device-card-header {\n    color: #fff;\n    font-weight: bold;\n    height: 300px;\n    background: url(\"/assets/device-header.jpg\") left center/cover; }\n    .device-card > .device-card-header .device-card-title {\n      word-spacing: 800px;\n      height: 100%; }\n  .device-card .device-card-text {\n    font-size: 16px;\n    line-height: 24px; }\n    .device-card .device-card-text li {\n      font-size: 14px; }\n    .device-card .device-card-text p {\n      margin: 30px 0;\n      font-size: 24px; }\n"; });
 //# sourceMappingURL=app-bundle.js.map

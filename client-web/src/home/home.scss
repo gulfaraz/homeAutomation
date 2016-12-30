@@ -1,0 +1,104 @@
+.home-list,
+.home-list-header {
+    width: 70%;
+    margin: auto;
+}
+
+.home-list-header {
+    font-weight: 100;
+    letter-spacing: 1px;
+    margin-top: 5%;
+    box-sizing: border-box;
+    height: 64px;
+    padding: 16px;
+    color: white;
+    background-color: #90a4ae;
+}
+
+.home-list {
+    box-sizing: border-box;
+    list-style: none;
+    padding: 0;
+    background-color: white;
+
+    .home-item-container {
+        &:hover,
+        &:active {
+            background-color: #eceff1;
+        }
+
+        .home-list-item {
+            box-sizing: border-box;
+            cursor: pointer;
+            width: 100%;
+            text-decoration: none;
+            color: inherit;
+
+            &:hover,
+            &:active {
+                .home-actions-container {
+                    .home-action-container {
+                        .home-icon {
+                            color: rgba(0, 0, 0, 0.54);
+                        }
+                    }
+                }
+            }
+
+            .home-icon-container,
+            .home-action-container {
+                text-align: center;
+                cursor: pointer;
+            }
+
+            .home-icon {
+                font-size: 32px;
+                text-align: center;
+                line-height: 40px;
+                width: 40px;
+                border-radius: 50px;
+                color: rgba(0, 0, 0, 0.13);
+            }
+
+            .home-icon-container {
+                .home-icon {
+                    color: rgba(0, 0, 0, 0.54);
+                    background-color: rgba(0, 0, 0, 0.13);
+                }
+            }
+
+            .home-title-container {
+                .home-title {
+                    font-size: 20px;
+                }
+                .home-sub-title {
+                    color: rgba(0, 0, 0, 0.54);
+                }
+            }
+
+            .home-actions-container {
+                text-align: right;
+
+                .home-action-container {
+                    display: inline-block;
+                }
+            }
+        }
+    }
+
+    .add-home-row {
+        border-top: 1px solid rgba(0, 0, 0, 0.24);
+        cursor: pointer;
+
+        &:hover,
+        &:active {
+            background-color: #eceff1;
+        }
+
+        .home-list-add-home {
+            width: 100%;
+            text-decoration: none;
+            color: inherit;
+        }
+    }
+}
