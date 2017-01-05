@@ -1,30 +1,41 @@
-<div>
-    <h3>Connect Device</h3>
+<div class="device-page">
+    <h4>Connect Device</h4>
+    <div class="selected-device">
+        <div class="back-button-container">
+            <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--mini-fab" ui-sref="network">
+                <i class="material-icons">chevron_left</i>
+            </button>
+        </div>
+        <div class="selected-device-message-container">
+            <div>Select the device to configure</div>
+        </div>
+    </div>
     <div class="networks-list">
         <div class="network-scan-status">
-            <div ng-show="devices">{{devices.length}} Device{{ (devices.length > 1) ? "s" : "" }} Found</div>
-            <div ng-show="scanning">Scanning for Device networks...</div>
-            <div ng-hide="scanning">
-                <button type="button" ui-sref="network">Back</button>
-                <button type="button" ng-click="scanDevices()">Scan for devices</button>
+            <div class="network-scan-status-action">
+                <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--raised mdl-button--colored" ng-click="scanDevices()" ng-hide="scanning">Scan</button>
+                <div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active network-scan-status-loader" ng-show="scanning"></div>
             </div>
+            <div class="network-scan-status-message">{{scanMessage}}</div>
         </div>
-        <div class="network" ng-repeat="network in devices" ng-show="devices.length">
-            <div class="network-security">{{network.security}}</div>
-            <div class="network-name">{{network.ssid}}</div>
-            <div class="network-strength">{{network.signal_level}}</div>
-            <div class="network-connect-button-container" ng-hide="network.ssid === getPassword">
-                <button type="button" class="network-connect-button" ng-click="connectDevice(network)">Connect</button>
-            </div>
-            <div class="network-password-dialog" ng-show="network.ssid === getPassword">
-                <label>Password</label>
-                <input type="password" ng-model="password" />
-                <div>{{connectMessage}}</div>
-                <div>
-                    <button type="button" ng-click="connectDevice(network, password)">Connect</button>
-                </div>
-            </div>
-        </div>
-        <div class="network-scan-message" ng-hide="devices.length">{{scanMessage}}</div>
+        <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp network-table">
+            <thead>
+                <tr>
+                    <th class="network-name mdl-data-table__cell--non-numeric">Device ID</th>
+                    <th class="network-connect-button-container mdl-data-table__cell--non-numeric">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="network" ng-repeat="network in devices | orderBy: 'ssid'" ng-show="devices.length">
+                    <td class="network-name mdl-data-table__cell--non-numeric">{{network.ssid}}</td>
+                    <td class="network-connect-button-container mdl-data-table__cell--non-numeric">
+                        <button type="button" class="mdl-button mdl-js-button mdl-button--colored network-connect-button" ng-click="connectDevice(network)">Select</button>
+                    </td>
+                </tr>
+                <tr class="network-message" ng-hide="devices.length">
+                    <td class="network-message" colspan="4">No Devices Found</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>

@@ -1,36 +1,54 @@
-<div>
+<div class="manage-page">
     <h3>Link Terminals</h3>
-    <div ng-show="message">
-        <div>{{message}}</div>
-    </div>
-    <div ng-hide="message">
-        <div class="switch-list">
-            <div class="switch" ng-repeat="switch in switchList track by $index">
-                <div class="switch-index">{{$index}}</div>
-                <div class="switch-test-button-container">
-                    <button type="button" class="switch-test-button" ng-click="toggleSwitch($index)">Test</button>
-                </div>
-                <div>
-                    <select ng-model="deviceIdList[$index]" required="true" ng-options="(terminal.homeId + '/' + terminal.roomId + '/' + terminal.terminalId) as terminal.terminalName for terminal in terminalList">
-                        <option value="">Unattached</option>
-                    </select>
-                </div>
-                <div>
-                    <div>{{ getTerminalProperty("linked", deviceIdList[$index]) ? "This terminal is currently linked to a switch" : "" }}</div>
-                </div>
-                <div>
-                    <div>{{getTerminalProperty("type", deviceIdList[$index])}}</div>
-                </div>
-                <div>
-                    <div>{{deviceIdList[$index]}}</div>
-                </div>
-            </div>
+    <div class="manage-switches">
+        <div class="back-button-container">
+            <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--mini-fab" ui-sref="device">
+                <i class="material-icons">chevron_left</i>
+            </button>
         </div>
-        <div>
-            <button type="button" ng-click="setupDevice(homeCredentials, deviceIdList)">Save</button>
+        <div class="manage-switches-message-container">Assign the desired HomeConnect terminals to the switches on the selected device then click SAVE button</div>
+        <div class="manage-switches-actions-container">
+            <button type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" ng-click="setupDevice(homeCredentials, deviceIdList)">Save</button>
         </div>
     </div>
-    <div>
-        <button type="button" ui-sref="device">Back</button>
+    <div class="switch-list">
+        <table class="switch-list-table mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+            <thead>
+                <tr>
+                    <th class="switch-actions-container mdl-data-table__cell--non-numeric">Check Switch</th>
+                    <th class="switch-index mdl-data-table__cell--non-numeric">Switch ID</th>
+                    <th class="switch-terminal-dropdown-container mdl-data-table__cell--non-numeric">Terminal</th>
+                    <th class="switch-terminal-type-container mdl-data-table__cell--non-numeric">Type</th>
+                    <th class="switch-terminal-information-container mdl-data-table__cell--non-numeric">Terminal Information</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="switch" ng-repeat="switch in switchList track by $index">
+                    <td class="switch-actions-container mdl-data-table__cell--non-numeric">
+                        <div class="switch-test-button-container">
+                            <button type="button" class="switch-test-button mdl-button mdl-js-button mdl-button--colored" ng-click="toggleSwitch($index)">Check</button>
+                        </div>
+                    </td>
+                    <td class="switch-index mdl-data-table__cell--non-numeric">Switch {{$index + 1}}</td>
+                    <td class="switch-terminal-dropdown-container input-dropdown-container mdl-data-table__cell--non-numeric">
+                        <select class="input-dropdown" ng-model="deviceIdList[$index]" required="true" ng-options="(terminal.homeId + '/' + terminal.roomId + '/' + terminal.terminalId) as terminal.terminalName for terminal in terminalList">
+                            <option value="">Unattached</option>
+                        </select>
+                    </td>
+                    <td class="switch-terminal-type-container mdl-data-table__cell--non-numeric">
+                        <i class="material-icons terminal-icon" ng-show="getTerminalProperty('type', deviceIdList[$index]) === 'light'">lightbulb_outline</i>
+                        <i class="material-icons terminal-icon" ng-show="getTerminalProperty('type', deviceIdList[$index]) === 'fan'">toys</i>
+                    </td>
+                    <td class="switch-terminal-information-container mdl-data-table__cell--non-numeric">
+                        <ol>
+                            <li ng-show="{{!!getTerminalProperty('parentage', deviceIdList[$index])}}">{{ getTerminalProperty("parentage", deviceIdList[$index]) }}</li>
+                            <li ng-show="getTerminalProperty('linked', deviceIdList[$index])">The terminal is already linked to a switch</li>
+                            <li ng-show="{{!!getTerminalProperty('lastStateTime', deviceIdList[$index])}}">Last active <span time-since="{{getTerminalProperty('lastStateTime', deviceIdList[$index])}}"></span></li>
+                            <li ng-show="{{!!getTerminalProperty('created', deviceIdList[$index])}}">Created <span time-since="{{getTerminalProperty('created', deviceIdList[$index])}}"></span></li>
+                        </ol>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>

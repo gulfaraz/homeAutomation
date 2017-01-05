@@ -1,19 +1,29 @@
-<div>
-    <h3>Fetch Terminals</h3>
+<div class="mdl-card mdl-shadow--6dp login-form-card">
     <form name="fetchTerminalsForm" ng-submit="fetchTerminals()">
-        <div>
-            <label for="userName">User Name</label>
-            <input type="text" name="userName" ng-model="userName" />
+        <div class="mdl-card__title mdl-color--grey-300">
+            <h2 class="mdl-card__title-text">HomeConnect Account</h2>
         </div>
-        <div>
-            <label for="password">Password</label>
-            <input type="password" name="password" ng-model="password" />
+        <div class="mdl-card__supporting-text">
+                <div class="mdl-textfield mdl-js-textfield">
+                    <input class="mdl-textfield__input mdl-textfield__input--yellow" type="text" name="userName" id="userName" ng-model="userName" />
+                    <label class="mdl-textfield__label" for="userName">User Name</label>
+                </div>
+                <div class="mdl-textfield mdl-js-textfield">
+                    <input class="mdl-textfield__input" type="password" name="password" id="password" ng-model="password" />
+                    <label class="mdl-textfield__label" for="password">Passcode</label>
+                </div>
         </div>
-        <div>
-            <div ng-show="message">{{message}}</div>
-        </div>
-        <div>
-            <button type="submit">Login</button>
+        <div class="mdl-card__actions mdl-card--border">
+            <button type="submit" class="mdl-button mdl-js-button mdl-js-ripple-effect">Sign In</button>
         </div>
     </form>
+    <dialog class="mdl-dialog" id="dialog">
+        <h4 class="mdl-dialog__title">Alert</h4>
+        <div class="mdl-dialog__content">
+            <p>{{message}}</p>
+        </div>
+        <div class="mdl-dialog__actions">
+            <button type="button" class="mdl-button close" ng-click="closeDialog()">Close</button>
+        </div>
+    </dialog>
 </div>

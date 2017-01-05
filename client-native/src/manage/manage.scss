@@ -1,0 +1,78 @@
+.manage-page {
+    padding: 10px 30px;
+
+    .manage-switches,
+    .switch-list,
+    .switch-list-table {
+        width: 100%;
+        max-width: 800px;
+    }
+
+    .manage-switches {
+        box-sizing: border-box;
+        padding: 16px;
+
+        .back-button-container,
+        .manage-switches-message-container,
+        .manage-switches-actions-container {
+            display: inline-block;
+        }
+
+        .manage-switches-message-container {
+            padding: 0 16px;
+            font-size: 16px;
+            box-sizing: border-box;
+            vertical-align: middle;
+            width: 80%;
+        }
+    }
+
+    .switch-list {
+        margin-top: 20px;
+
+        .switch-list-table {
+            table-layout: fixed;
+
+            .terminal-icon {
+                color: gray;
+            }
+
+            .switch-actions-container {
+                width: 150px;
+            }
+
+            td.switch-index {
+                font-size: 16px;
+            }
+
+            .switch-index {
+                width: 100px;
+            }
+
+            .switch-terminal-dropdown-container {
+                width: 200px;
+            }
+
+            .switch-terminal-type-container {
+                width: 100px;
+            }
+
+            .switch-terminal-information-container {
+                width: 300px;
+            }
+
+            th.switch-terminal-information-container {
+                text-indent: 20px;
+            }
+
+            td.switch-terminal-information-container {
+                white-space: normal;
+            }
+
+            .switch-terminal-type-container,
+            .switch-actions-container {
+                text-align: center;
+            }
+        }
+    }
+}

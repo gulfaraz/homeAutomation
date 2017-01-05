@@ -1,0 +1,32 @@
+.header-label {
+    cursor: pointer;
+}
+
+.route-loader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    text-align: center;
+    padding: 20%;
+}
+
+.input-dropdown-container {
+    .input-dropdown-label {
+        font-size: 12px;
+        color: gray;
+    }
+    .input-dropdown {
+        width: 100%;
+        background-color: white;
+        color: #747474;
+        position: relative;
+        height: 36px;
+        line-height: 36px;
+        font-size: 16px;
+        outline: 0;
+    }
+}

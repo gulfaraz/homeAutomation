@@ -17,7 +17,7 @@ gulp.task("hint", function() {
 
 gulp.task("sass", function() {
     return gulp.src([
-            config.lib + "/Materialize/dist/css/materialize.css",
+            config.lib + "/material-design-lite/material.css",
             config.src + "/home/stylesheets/variables.scss",
             config.src + "/home/stylesheets/mixins.scss",
             config.src + "/**/*.scss"
@@ -53,9 +53,9 @@ gulp.task("images", function() {
 
 gulp.task("libraryScripts", function() {
     return gulp.src([
+            config.lib + "/material-design-lite/material.js",
             config.lib + "/angular/angular.js",
-            config.lib + "/angular-ui-router/release/angular-ui-router.js",
-            config.lib + "/Materialize/dist/js/materialize.js"
+            config.lib + "/angular-ui-router/release/angular-ui-router.js"
         ])
         .pipe(plugin.concat("libraries.js"))
         .pipe(plugin.uglify().on("error", plugin.util.log))
