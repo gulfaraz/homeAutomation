@@ -1,13 +1,16 @@
 <template>
-<require from="./contact.css"></require>
-<div class="mdl-card mdl-shadow--2dp contact-card">
-  <div class="mdl-card__title contact-card-header">
-    <h2 class="mdl-card__title-text contact-card-title">${title}</h2>
-  </div>
-  <div class="mdl-card__supporting-text contact-card-text">
-    <p>We would love to hear from you</p>
-    <p>Please view the <a route-href="route: faq" title="Frequently Asked Questions">FAQ</a> section before sending us a query</p>
-    <div>Send us a mail at <a href="mailto:hi@homeconnect.com" target="_top">hi@homeconnect.com</a></div>
-  </div>
-</div>
+    <require from="./contact.css"></require>
+    <div class="mdl-card mdl-shadow--2dp contact-card">
+        <div class="mdl-card__title contact-card-header">
+            <h2 class="mdl-card__title-text contact-card-title">${title}</h2>
+        </div>
+        <div class="mdl-card__supporting-text contact-card-text">
+            <p>We would love to hear from you</p>
+            <p>Please view the <a route-href="route: faq" title="Frequently Asked Questions">FAQ</a> section before sending us a query</p>
+            <div>Send us a mail at <a href="mailto:hi@homeconnect.com" target="_top">hi@homeconnect.com</a></div>
+        </div>
+        <div class="mdl-card__actions mdl-card--border">
+            <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" route-href="route: home" title="Go Home">Home</a>
+        </div>
+    </div>
 </template>

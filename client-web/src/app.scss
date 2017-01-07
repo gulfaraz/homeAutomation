@@ -1,5 +1,15 @@
 .home-layout {
     background: url('/assets/home.jpg') center / cover;
+
+    .app-header {
+        background-color: #424242;
+    }
+}
+
+.mdl-button {
+    &.mdl-button--colored {
+        color: #424242;
+    }
 }
 
 .mdl-dialog__title {
