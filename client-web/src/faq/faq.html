@@ -1,0 +1,16 @@
+<template>
+<require from="./faq.css"></require>
+<div class="mdl-card mdl-shadow--2dp faq-card">
+  <div class="mdl-card__title faq-card-header">
+    <h2 class="mdl-card__title-text faq-card-title">${title}</h2>
+  </div>
+  <div class="mdl-card__supporting-text faq-card-text">
+    <div repeat.for="faq of faqs">
+        <p class="question">${$index + 1}. ${faq.question}</p>
+        <p class="answer">${faq.answer}</p>
+        <p class="link"><a href="${faq.link.url}" title="${faq.link.title}" target="_blank">${faq.link.title}</a></p>
+    </div>
+    <div>If you require an answer to a question not mentioned here please send a mail to <a href="mailto:support@homeconnect.com" target="_top">support@homeconnect.com</a></div>
+  </div>
+</div>
+</template>

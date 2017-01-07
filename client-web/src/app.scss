@@ -62,3 +62,25 @@
 div._dialog_overlay {
     z-index: 0 !important;
 }
+
+.footer {
+    z-index: 1;
+    height: 70px;
+    min-height: 70px;
+    padding: 16px;
+    box-sizing: border-box;
+
+    .footer-copyright {
+        color: #d6d6d6;
+    }
+
+    .footer-link {
+        color: #d6d6d6;
+        cursor: pointer;
+
+        &:hover,
+        &:active {
+            color: #fff;
+        }
+    }
+}
