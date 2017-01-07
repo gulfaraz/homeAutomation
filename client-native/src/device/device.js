@@ -1,19 +1,27 @@
 (function () {
-    angular.module("device", [ "ui.router" ])
-        .config(["$stateProvider", "$urlRouterProvider", function (stateProvider, urlRouterProvider) {
+    angular.module("device", [ "common" ])
+        .config(["$stateProvider", "$urlRouterProvider", "resolve", function (stateProvider, urlRouterProvider, resolve) {
             urlRouterProvider.otherwise("/");
             stateProvider
                 .state("device", {
                     url: "/device",
                     templateUrl: "device.html",
-                    controller: "DeviceCtrl"
+                    controller: "DeviceCtrl",
+                    resolve: {
+                        "terminals" : resolve.terminals,
+                        "network" : resolve.network
+                    }
                 });
         }])
         .controller("DeviceCtrl", [ "$scope", "NetworkService", "$timeout", "$state", function (scope, networkService, timeout, state) {
 
-            scope.scanMessage = "Looking for devices...";
+            scope.scanMessage = "Scanning...";
 
             scope.scanDevices = function () {
+                if(scope.timeoutInstance) {
+                    timeout.cancel(scope.timeoutInstance);
+                }
+                scope.scanMessage = "Scanning...";
                 scope.scanning = true;
                 networkService.find(true, function (error, devices) {
                     if(error) {
@@ -23,34 +31,36 @@
                     timeout(function () {
                         scope.scanning = false;
                         scope.devices = devices;
-                        scope.scanMessage = "No Devices Found";
+                        if(scope.devices.length > 0) {
+                            scope.scanMessage = scope.devices.length + " Device" + (devices.length > 1 ? "s" : "") + " Found";
+
+                        } else {
+                            scope.scanMessage = "No Devices Found";
+                        }
                     });
                 });
+                scope.timeoutInstance = timeout(function () {
+                    scope.scanDevices();
+                }, 3000);
             };
 
             scope.scanDevices();
 
-            scope.connectDevice = function (network, password) {
+            scope.connectDevice = function (network) {
+                scope.selectedDevice = network;
                 scope.connectMessage = null;
-                networkService.connect(network, password, function (error, credentials) {
+                networkService.connect(network, "setupnewdevice", function (error, credentials) {
                     if(error) {
-                        if(error === "password") {
-                            if(scope.getPassword === network.ssid) {
-                                scope.connectMessage = "Enter device password";
-                            } else {
-                                scope.getPassword = network.ssid;
-                            }
-                        } else if (error === "failed") {
+                        if (error === "failed") {
                             scope.connectMessage = "Failed to connect to " + (network.ssid || "device");
                         } else {
-                            scope.connectMessage = "Unable to connect to device, verify password";
+                            scope.connectMessage = "Unable to connect to device, hold the reset button and try again";
                             console.error(error);
                         }
                         var homeCredentials = networkService.getCredentials();
                         networkService.connect({ ssid: homeCredentials.ssid }, homeCredentials.password);
                     } else {
                         timeout(function () {
-                            scope.getPassword = null;
                             scope.connectMessage = null;
                             state.go("manage");
                         });

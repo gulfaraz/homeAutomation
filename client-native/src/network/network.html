@@ -1,45 +1,70 @@
-<div>
-    <h3>Set Home Network</h3>
+<div class="network-page">
+    <h4>Select Home Network</h4>
     <div class="home-network">
-        <div>
-            <div ng-show="credentials.ssid">
-                {{credentials.ssid}} is set as your HOME network.
-            </div>
-            <div ng-hide="credentials.ssid">
-                Please set your HOME network to proceed.
-            </div>
-            <div>
-                <button type="button" ui-sref="home">Back</button>
-                <button type="button" ng-click="changeNetwork()" ng-hide="showNetworkList">{{ credentials.ssid ? "Change" : "Set" }} HOME Network</button>
-                <button type="button" ng-click="showNetworkList = false" ng-show="showNetworkList">Cancel</button>
-                <button type="button" ui-sref="device" ng-show="credentials.ssid">Next</button>
-            </div>
+        <div class="back-button-container">
+            <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--mini-fab" ui-sref="home">
+                <i class="material-icons">chevron_left</i>
+            </button>
+        </div>
+        <div class="home-network-message-container">
+            <div ng-show="credentials.ssid">{{credentials.ssid}} is set as the Home network</div>
+            <div ng-hide="credentials.ssid">No Home network selected</div>
+        </div>
+        <div class="home-network-actions-container">
+            <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect" type="button" ui-sref="device" ng-show="credentials.ssid">Proceed</button>
         </div>
     </div>
-    <div class="networks-list" ng-show="showNetworkList">
+    <div class="network-list">
         <div class="network-scan-status">
-            <div ng-show="networks">{{networks.length}} Network{{ (networks.length > 1) ? "s" : "" }} Found</div>
-            <div ng-show="scanning">Scanning for WiFi networks...</div>
-            <div ng-hide="scanning">
-                <button type="button" ng-click="scanNetworks()">Scan</button>
+            <div class="network-scan-status-action">
+                <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--raised mdl-button--colored" ng-click="scanNetworks()" ng-hide="scanning">Scan</button>
+                <div class="mdl-spinner mdl-spinner--single-color mdl-js-spinner is-active network-scan-status-loader" ng-show="scanning"></div>
             </div>
+            <div class="network-scan-status-message">{{scanMessage}}</div>
         </div>
-        <div class="network" ng-repeat="network in networks" ng-show="networks.length">
-            <div class="network-security">{{network.security}}</div>
-            <div class="network-name">{{network.ssid}}</div>
-            <div class="network-strength">{{network.signal_level}}</div>
-            <div class="network-connect-button-container" ng-hide="network.ssid === getPassword">
-                <button type="button" class="network-connect-button" ng-click="selectNetwork(network)">Set</button>
-            </div>
-            <div class="network-password-dialog" ng-show="network.ssid === getPassword">
-                <label>Password</label>
-                <input type="password" ng-model="password" />
-                <div>{{connectMessage}}</div>
-                <div>
-                    <button type="button" ng-click="selectNetwork(network, password)">Set</button>
-                </div>
-            </div>
-        </div>
-        <div class="network-scan-message" ng-hide="networks.length">{{scanMessage}}</div>
+        <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp network-table">
+            <thead>
+                <tr>
+                    <th class="network-security mdl-data-table__cell--non-numeric">Security</th>
+                    <th class="network-name mdl-data-table__cell--non-numeric">SSID</th>
+                    <th class="network-strength mdl-data-table__cell--non-numeric">Strength</th>
+                    <th class="network-connect-button-container mdl-data-table__cell--non-numeric">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="network" ng-repeat="network in networks | orderBy: 'signal_level'" ng-show="networks.length">
+                    <td class="network-security network-icon">
+                        <i class="material-icons" ng-show="network.security === 'NONE'">network_wifi</i>
+                        <i class="material-icons" ng-hide="network.security === 'NONE'">wifi_lock</i>
+                    </td>
+                    <td class="network-name mdl-data-table__cell--non-numeric">{{network.ssid}}</td>
+                    <td class="network-strength mdl-data-table__cell--non-numeric network-icon">
+                        <i class="material-icons" ng-show="network.signal_level > -67">signal_cellular_4_bar</i>
+                        <i class="material-icons" ng-show="-67 >= network.signal_level && network.signal_level >= -70">signal_cellular_connected_no_internet_4_bar</i>
+                        <i class="material-icons" ng-show="-70 > network.signal_level">signal_cellular_null</i>
+                    </td>
+                    <td class="network-connect-button-container mdl-data-table__cell--non-numeric">
+                        <button class="mdl-button mdl-js-button mdl-button--colored network-connect-button" ng-click="selectNetwork(network)">Select</button>
+                    </td>
+                </tr>
+                <tr class="network-message" ng-hide="networks.length">
+                    <td class="network-message" colspan="4">No Networks Found</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
+    <dialog class="mdl-dialog network-password-dialog" id="networkPasswordDialog">
+        <h4 class="mdl-dialog__title network-password-dialog-header">Enter Passcode</h4>
+        <div class="mdl-dialog__content">
+            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <input class="mdl-textfield__input" type="password" id="password" ng-model="password" />
+                <label class="mdl-textfield__label" for="password">Passcode</label>
+            </div>
+            <div class="network-password-dialog-message">{{connectMessage}}</div>
+        </div>
+        <div class="mdl-dialog__actions">
+            <button type="button" class="mdl-button" ng-click="selectNetwork(selectedNetwork, password)">Connect</button>
+            <button type="button" class="mdl-button close" ng-click="closeNetworkPasswordDialog()">Cancel</button>
+        </div>
+    </dialog>
 </div>

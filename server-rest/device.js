@@ -1,11 +1,11 @@
 module.exports = function (Home) {
 
-    function getUnlinkedTerminals(userId, callback) {
+    function getTerminals(userId, callback) {
         Home.find({ residents: userId }).lean().exec(function (err, homes) {
             if(err) {
                 callback(err);
             } else {
-                var unlinkedTerminals = [];
+                var terminalList = [];
                 for(var homeIndex in homes) {
                     var rooms = homes[homeIndex].rooms;
                     for(var roomIndex in rooms) {
@@ -18,16 +18,17 @@ module.exports = function (Home) {
                             terminal.terminalId = terminal._id;
                             terminal.roomId = rooms[roomIndex]._id;
                             terminal.homeId = homes[homeIndex]._id;
-                            unlinkedTerminals.push(terminal);
+                            terminal.parentage = "Terminal (" + terminal.terminalName + ") is a " + terminal.type + " in Room (" + rooms[roomIndex].roomName + ") in Home (" + homes[homeIndex].homeName + ")";
+                            terminalList.push(terminal);
                         }
                     }
                 }
-                callback(null, unlinkedTerminals);
+                callback(null, terminalList);
             }
         });
     }
 
     return {
-        getUnlinkedTerminals: getUnlinkedTerminals
+        getTerminals: getTerminals
     }
 };

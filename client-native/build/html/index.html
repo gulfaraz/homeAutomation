@@ -2,13 +2,43 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>homeAutomation - Setup New Device</title>
+        <title>HomeConnect Configurator</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+        <link rel="stylesheet" href="../stylesheets/styles.css" />
     </head>
     <body ng-app="app" ng-cloak>
-        <div class="app-container" ng-controller="AppCtrl">
-            <h1>homeAutomation</h1>
-            <h3>{{title}}</h3>
-            <div ui-view class="view-container"></div>
+        <div class="app-container mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-tabs" ng-controller="AppCtrl" ng-class="{ 'home-page' : currentState.name === 'home' }">
+            <header class="app-header mdl-layout__header">
+                <div class="mdl-layout__header-row">
+                    <span class="mdl-layout-title header-label" ui-sref="home">HomeConnect Configurator</span>
+                </div>
+                <div class="app-tab-bar mdl-layout__tab-bar mdl-js-ripple-effect">
+                    <a href="#view-container" ng-click="goTo('home')" class="home-tab tab-link mdl-layout__tab" ng-class="{ 'is-active' : currentState.name === 'home' }">HomeConnect Account</a>
+                    <a href="#view-container" ng-click="goTo('network')" class="network-tab tab-link mdl-layout__tab" ng-class="{ 'is-active' : currentState.name === 'network' }">Home Network</a>
+                    <a href="#view-container" ng-click="goTo('device')" class="device-tab tab-link mdl-layout__tab" ng-class="{ 'is-active' : currentState.name === 'device' }">Choose Device</a>
+                    <a href="#view-container" ng-click="goTo('manage')" class="manage-tab tab-link mdl-layout__tab" ng-class="{ 'is-active' : currentState.name === 'manage' }">Configure Switch</a>
+                </div>
+            </header>
+            <main class="mdl-layout__content">
+                <section class="mdl-layout__tab-panel is-active" id="view-container">
+                    <div class="page-content">
+                        <div ui-view class="view-container"></div>
+                    </div>
+                </section>
+            </main>
+            <footer class="footer mdl-mini-footer">
+                <div class="mdl-mini-footer__left-section">
+                    <div class="footer-copyright mdl-logo">&copy; Gulfaraz Yasin</div>
+                </div>
+                <div class="mdl-mini-footer__right-section">
+                    <ul class="mdl-mini-footer__link-list">
+                        <li><span class="footer-link">homeconnect.com</span></li>
+                    </ul>
+                </div>
+            </footer>
+            <div class="route-loader" ng-show="loading">
+                <div class="mdl-spinner mdl-js-spinner is-active"></div>
+            </div>
         </div>
     </body>
     <script>

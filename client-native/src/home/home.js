@@ -1,5 +1,5 @@
 (function () {
-    angular.module("home", [ "ui.router" ])
+    angular.module("home", [ "common" ])
         .config(["$stateProvider", "$urlRouterProvider", function (stateProvider, urlRouterProvider) {
             urlRouterProvider.otherwise("/");
             stateProvider
@@ -10,6 +10,8 @@
                 });
         }])
         .controller("HomeCtrl", [ "$scope", "$http", "TerminalService", "$state", function (scope, http, terminalService, state) {
+            var dialog = document.querySelector("#dialog");
+
             scope.fetchTerminals = function () {
                 var credentials = {
                     "userName": scope.userName,
@@ -21,10 +23,17 @@
                         state.go("network");
                     } else {
                         scope.message = "No Terminals Available";
+                        dialog.showModal();
                     }
                 }, function (response) {
                     scope.message = response.data.message;
+                    dialog.showModal();
                 });
+            };
+
+            scope.closeDialog = function () {
+                dialog.close();
+                scope.message = "";
             };
         }]);
 })();

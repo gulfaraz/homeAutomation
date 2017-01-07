@@ -1,5 +1,5 @@
 import {inject, useView} from 'aurelia-framework';
 
-export class Home {
+export class Device {
     title = "Configure Your HomeConnect Device";
 }

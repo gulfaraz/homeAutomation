@@ -54,6 +54,24 @@ export default class {
                     name: 'device',
                     moduleId: 'device/device',
                     title: 'Device'
+                },
+                {
+                    route: 'contact',
+                    name: 'contact',
+                    moduleId: 'contact/contact',
+                    title: 'Contact'
+                },
+                {
+                    route: 'privacy',
+                    name: 'privacy',
+                    moduleId: 'privacy/privacy',
+                    title: 'Privacy Policy'
+                },
+                {
+                    route: 'faq',
+                    name: 'faq',
+                    moduleId: 'faq/faq',
+                    title: 'FAQ'
                 }
             ]);
         };

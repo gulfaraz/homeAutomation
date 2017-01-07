@@ -1,21 +1,18 @@
 (function () {
-    angular.module("manage", [ "ui.router" ])
-        .config(["$stateProvider", "$urlRouterProvider", function (stateProvider, urlRouterProvider) {
+    angular.module("manage", [ "common" ])
+        .config(["$stateProvider", "$urlRouterProvider", "resolve", function (stateProvider, urlRouterProvider, resolve) {
             urlRouterProvider.otherwise("/");
             stateProvider
                 .state("manage", {
                     url: "/manage",
                     templateUrl: "manage.html",
-                    controller: "ManageCtrl"
+                    controller: "ManageCtrl",
+                    resolve: resolve
                 });
         }])
         .controller("ManageCtrl", [ "$scope", "TerminalService", "NetworkService", "$timeout", "$state", function (scope, terminalService, networkService, timeout, state) {
 
             scope.terminalList = terminalService.getTerminals();
-            if(scope.terminalList.length === 0) {
-                alert("You do not have any terminals to configure");
-                state.go("home");
-            }
 
             scope.homeCredentials = networkService.getCredentials();
 
@@ -27,7 +24,7 @@
                 scope.switchList.length = response.data.switchCount;
                 scope.deviceIdList = response.data.deviceIdList;
             }, function (response) {
-                scope.message = "Please check if you have connected to the correct device";
+                state.go("device");
             });
 
             scope.getTerminalProperty = function (property, deviceId) {

@@ -1,0 +1,74 @@
+.device-page {
+    padding: 10px 30px;
+
+    .selected-device,
+    .network-table,
+    .network-scan-status {
+        width: 100%;
+        max-width: 800px;
+    }
+
+    .selected-device {
+        box-sizing: border-box;
+        padding: 16px;
+
+        .back-button-container,
+        .selected-device-message-container {
+            display: inline-block;
+        }
+
+        .selected-device-message-container {
+            padding: 16px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+    }
+
+    .network-scan-status {
+        box-sizing: border-box;
+        padding: 16px;
+        height: 100px;
+        line-height: 64px;
+
+        .network-scan-status-action,
+        .network-scan-status-message,
+        .back-button-container {
+            display: inline-block;
+            height: 100%;
+        }
+
+        .network-scan-status-action {
+            text-align: center;
+            width: 120px;
+
+            .network-scan-status-loader {
+                top: 8px;
+            }
+        }
+
+        .network-scan-status-message {
+            font-size: 16px;
+        }
+    }
+
+    .network-table {
+        .network-message {
+            text-align: center;
+            color: gray;
+        }
+
+        .network-icon {
+            text-align: left;
+            color: gray;
+            text-indent: 5px;
+        }
+
+        th.network-connect-button-container {
+            padding: 0 52px 8px 0;
+        }
+
+        .network-connect-button-container {
+            text-align: right;
+        }
+    }
+}

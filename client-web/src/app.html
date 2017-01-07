@@ -6,7 +6,7 @@
     <require from='side-bar/side-bar'></require>
     <require from="./app.css"></require>
     <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header home-layout mdl-layout--no-desktop-drawer-button">
-        <header class="mdl-layout__header mdl-layout__header--seamed mdl-color--grey-800">
+        <header class="app-header mdl-layout__header mdl-layout__header--seamed">
             <div class="mdl-layout__header-row">
                 <a class="mdl-layout-title" route-href="route: home">Home Connect</a>
                 <div class="mdl-layout-spacer"></div>
@@ -24,5 +24,17 @@
                 </div>
             </div>
         </main>
+        <footer class="footer mdl-mini-footer">
+            <div class="mdl-mini-footer__left-section">
+                <div class="footer-copyright mdl-logo">&copy; Gulfaraz Yasin</div>
+            </div>
+            <div class="mdl-mini-footer__right-section">
+                <ul class="mdl-mini-footer__link-list">
+                    <li><a route-href="route: faq" class="footer-link">FAQ</a></li>
+                    <li><a route-href="route: privacy" class="footer-link">Privacy</a></li>
+                    <li><a route-href="route: contact" class="footer-link">Contact</a></li>
+                </ul>
+            </div>
+        </footer>
     </div>
 </template>

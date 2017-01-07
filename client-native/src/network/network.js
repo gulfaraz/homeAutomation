@@ -1,26 +1,34 @@
 (function () {
-    angular.module("network", [ "ui.router" ])
-        .config(["$stateProvider", "$urlRouterProvider", function (stateProvider, urlRouterProvider) {
+    angular.module("network", [ "common" ])
+        .config(["$stateProvider", "$urlRouterProvider", "resolve", function (stateProvider, urlRouterProvider, resolve) {
             urlRouterProvider.otherwise("/");
             stateProvider
                 .state("network", {
                     url: "/network",
                     templateUrl: "network.html",
-                    controller: "NetworkCtrl"
+                    controller: "NetworkCtrl",
+                    resolve: {
+                        "terminals" : resolve.terminals
+                    }
                 });
         }])
         .controller("NetworkCtrl", [ "$scope", "NetworkService", "$timeout", "$state", function (scope, networkService, timeout, state) {
 
-            scope.scanMessage = "Looking for networks...";
+            scope.scanMessage = "Scanning...";
 
             scope.credentials = networkService.getCredentials();
 
+            var networkPasswordDialog = document.querySelector("#networkPasswordDialog");
+
             scope.changeNetwork = function () {
-                scope.showNetworkList = true;
                 scope.scanNetworks();
             };
 
             scope.scanNetworks = function () {
+                if(scope.timeoutInstance) {
+                    timeout.cancel(scope.timeoutInstance);
+                }
+                scope.scanMessage = "Scanning...";
                 scope.scanning = true;
                 networkService.find(false, function (error, networks) {
                     if(error) {
@@ -30,21 +38,27 @@
                     timeout(function () {
                         scope.scanning = false;
                         scope.networks = networks;
-                        scope.scanMessage = "No Networks Found";
+                        if(scope.networks.length > 0) {
+                            scope.scanMessage = scope.networks.length + " Network" + (scope.networks.length > 1 ? "s" : "") + " Found";
+                        } else {
+                            scope.scanMessage = "No Networks Found";
+                        }
                     });
                 });
+                scope.timeoutInstance = timeout(function () {
+                    scope.scanNetworks();
+                }, 3000);
             };
 
+            scope.scanNetworks();
+
             scope.selectNetwork = function (network, password) {
+                scope.selectedNetwork = network;
                 scope.connectMessage = null;
                 networkService.connect(network, password, function (error, credentials) {
                     if(error) {
                         if(error === "password") {
-                            if(scope.getPassword === network.ssid) {
-                                scope.connectMessage = "Enter network password";
-                            } else {
-                                scope.getPassword = network.ssid;
-                            }
+                            networkPasswordDialog.showModal();
                         } else if (error === "failed") {
                             scope.connectMessage = "Failed to connect to " + (network.ssid || "network");
                         } else {
@@ -53,14 +67,18 @@
                         }
                     } else {
                         timeout(function () {
-                            scope.getPassword = null;
                             scope.connectMessage = null;
                             scope.credentials = credentials;
-                            scope.showNetworkList = false;
                             state.go("device");
                         });
                     }
                 });
+            };
+
+            scope.closeNetworkPasswordDialog = function () {
+                scope.password = "";
+                scope.connectMessage = null;
+                networkPasswordDialog.close();
             };
         }]);
 })();
