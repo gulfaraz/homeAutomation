@@ -48,7 +48,7 @@ var configuration = (function (switchCount, flash) {
     configuration.home = loadHomeCredentials();
 
     configuration.mqtt = {
-        host: "10.244.66.28",
+        host: "10.244.220.86",
         port: 1883,
         keepAlive: 60
     };
@@ -79,7 +79,8 @@ var configuration = (function (switchCount, flash) {
         timer = 0,
         pressTimeout = 2,
         resetTimeout = 5000,
-        subscribeTimeout = 500;
+        subscribeTimeout = 500,
+        firmwareMaxLength = 3000;
 
     function restartDevice() {
         setTimeout(require("ESP8266").reboot, resetTimeout);
@@ -219,6 +220,25 @@ var configuration = (function (switchCount, flash) {
         connectToMQTTServer(configuration.mqtt, configuration.deviceIdList);
     }
 
+    function fetchFirmware() {
+        http.get("http://" + configuration.mqtt.host + ":8080/device/firmware", function (response) {
+            var data = "";
+            response.on("data", function (chunk) {
+                if(data.length < firmwareMaxLength) {
+                    data += chunk;
+                }
+            });
+            response.on("close", function () {
+                data = JSON.parse(data);
+                try {
+                    eval(data.firmware); // jshint ignore:line
+                } catch (e) {
+                    setupMQTTClient();
+                }
+            });
+        });
+    }
+
     var mode = "startAP",
         credentials = configuration.client,
         next = startWebServer;
@@ -226,7 +246,7 @@ var configuration = (function (switchCount, flash) {
     if(configuration.home.ssid) {
         mode = "connect";
         credentials = configuration.home;
-        next = setupMQTTClient;
+        next = fetchFirmware;
     }
 
     startNetwork(mode, credentials, next);

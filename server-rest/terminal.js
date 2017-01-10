@@ -1,7 +1,7 @@
 module.exports = function (Home, mqttServer) {
 
     var syncDisconnectTime = 1000 * 3,
-        linkDisconnectTime = 1000 * 60 * 30;
+        linkDisconnectTime = 1000 * 60 * 60 * 24 * 3;
 
     function addTerminal(homeId, roomId, newTerminal, callback) {
         Home.findById(homeId).exec(function (err, home) {

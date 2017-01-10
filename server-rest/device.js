@@ -1,4 +1,5 @@
 module.exports = function (Home) {
+    var fs = require("fs");
 
     function getTerminals(userId, callback) {
         Home.find({ residents: userId }).lean().exec(function (err, homes) {
@@ -28,7 +29,19 @@ module.exports = function (Home) {
         });
     }
 
+    function getFirmware(callback) {
+        var fileContents = "";
+        var fileStream = fs.ReadStream("firmware/firmware.min.js");
+        fileStream.on("data", function (data) {
+            fileContents += data;
+        });
+        fileStream.on("end", function (data) {
+            callback({ "firmware" : fileContents });
+        });
+    }
+
     return {
-        getTerminals: getTerminals
+        getTerminals: getTerminals,
+        getFirmware: getFirmware
     }
 };

@@ -16,5 +16,9 @@ module.exports = function (router, auth, Device) {
         })(req, res, next);
     });
 
+    router.get("/firmware", function (req, res, next) {
+        Device.getFirmware(res.ok);
+    });
+
     return router;
 };
