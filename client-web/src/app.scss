@@ -96,6 +96,10 @@ dialog[open] {
     padding: 16px;
     box-sizing: border-box;
 
+    ul, ol {
+        line-height: 36px;
+    }
+
     .footer-copyright {
         color: #d6d6d6;
     }
@@ -107,6 +111,17 @@ dialog[open] {
         &:hover,
         &:active {
             color: #fff;
+        }
+    }
+}
+
+@media only screen and (max-width: 480px) {
+    .footer {
+        height: 160px;
+
+        .mdl-mini-footer__left-section,
+        .mdl-mini-footer__right-section {
+            width: 100%;
         }
     }
 }
