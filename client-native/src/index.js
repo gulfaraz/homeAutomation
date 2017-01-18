@@ -54,7 +54,7 @@
             function fetchTerminals(credentials) {
                 return http({
                     method: "POST",
-                    url: "http://localhost:8080/device/terminals",
+                    url: "http://raidms.com:8080/device/terminals",
                     data: credentials
                 });
             }
