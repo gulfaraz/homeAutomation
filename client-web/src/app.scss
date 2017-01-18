@@ -1,3 +1,8 @@
+body {
+    min-width: 300px;
+    position: relative;
+}
+
 .home-layout {
     background: url('/assets/home.jpg') center / cover;
 
@@ -34,10 +39,15 @@
 
 .mdl-layout-title {
     cursor: pointer;
-    height: 100%;
-    line-height: 64px;
-    text-decoration: none;
-    color: white;
+}
+
+.mdl-layout__header-row {
+    .mdl-layout-title {
+        cursor: pointer;
+        line-height: 64px;
+        text-decoration: none;
+        color: white;
+    }
 }
 
 .mdl-navigation {
@@ -69,8 +79,14 @@
     }
 }
 
-div._dialog_overlay {
-    z-index: 0 !important;
+dialog[open] {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.mdl-snackbar {
+    bottom: 70px;
 }
 
 .footer {

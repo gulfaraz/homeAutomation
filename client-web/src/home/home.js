@@ -5,7 +5,7 @@ import {CustomHttpClient} from '../http';
 @inject(CustomHttpClient, Router)
 
 export class Home {
-    title = "Choose a Home";
+    title = "Select Home";
 
     constructor(http, router) {
         this.http = http;

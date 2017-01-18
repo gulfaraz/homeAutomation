@@ -12,15 +12,15 @@
     <h4 class="home-address" if.bind="home.address.length > 0">${home.address}</h4>
     <ul class="room-list">
         <li class="room-item" repeat.for="room of home.rooms">
-            <div class="mdl-grid room-header ${ show.roomList[room._id] ? 'room-closed' : 'room-open' }">
-                <div class="mdl-cell mdl-cell--1-col">
+            <div class="room-header ${ show.roomList[room._id] ? 'room-closed' : 'room-open' }">
+                <div class="room-icon-container">
                     <i class="material-icons room-avatar-icon">dashboard</i>
                 </div>
-                <div class="mdl-cell mdl-cell--7-col room-title-container" click.delegate="show.toggleRoom(room._id)">
+                <div class="room-title-container" click.delegate="show.toggleRoom(room._id)">
                     <div class="room-title">${room.roomName}</div>
                     <div class="room-sub-title">${room.terminals.length} Terminal${room.terminals.length > 1 ? "s" : ""}</div>
                 </div>
-                <div class="mdl-cell mdl-cell--4-col room-actions-container">
+                <div class="room-actions-container">
                     <div class="room-action-container" show.bind="show.roomList[room._id]">
                         <div click.delegate="show.setRoom(room._id, false)" title="Leave Room"><i class="material-icons room-icon room-collapse-icon">expand_less</i></div>
                     </div>
@@ -33,13 +33,13 @@
                 </div>
             </div>
             <div class="room-content" show.bind="show.roomList[room._id]">
-                <div class="mdl-grid terminal-item" repeat.for="terminal of room.terminals">
-                    <div class="mdl-cell mdl-cell--1-col terminal-type">
+                <div class="terminal-item" repeat.for="terminal of room.terminals">
+                    <div class="terminal-type">
                         <i class="material-icons terminal-icon" show.bind="terminal.type === 'light'">lightbulb_outline</i>
                         <i class="material-icons terminal-icon" show.bind="terminal.type === 'fan'">toys</i>
                     </div>
-                    <div class="mdl-cell mdl-cell--5-col terminal-name" click.delegate="toggleTerminalState(room._id, terminal)">${terminal.terminalName}</div>
-                    <div class="mdl-cell mdl-cell--6-col terminal-actions">
+                    <div class="terminal-name" click.delegate="toggleTerminalState(room._id, terminal)">${terminal.terminalName}</div>
+                    <div class="terminal-actions">
                         <div if.bind="terminal.linked">
                             <div class="terminal-action-container" if.bind="terminal.synced">
                                 <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect terminal-switch-control" for="terminal-${terminal._id}-toggle">

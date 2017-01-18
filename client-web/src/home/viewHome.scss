@@ -120,27 +120,47 @@
                 color: rgba(0, 0, 0, 0.54);
             }
 
-            .room-avatar-icon {
-                width: 100%;
-                line-height: 40px;
-                text-align: center;
-                font-size: 40px;
+            .room-icon-container,
+            .room-title-container,
+            .room-actions-container {
+                display: inline-block;
+                margin: 15px;
+                vertical-align: middle;
+            }
+
+
+            .room-icon-container {
+                margin: 10px;
+
+                .room-avatar-icon {
+                    width: 100%;
+                    line-height: 40px;
+                    text-align: center;
+                    font-size: 40px;
+                }
             }
 
             .room-title-container {
                 cursor: pointer;
+                width: calc(100% - 270px);
 
                 .room-title {
                     font-size: 24px;
                     line-height: 24px;
                     color: rgba(0, 0, 0, 0.87);
-                    margin-bottom: 4px;
+                    padding-bottom: 4px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
                 }
 
                 .room-sub-title {
                     font-size: 12px;
                     line-height: 12px;
                     color: rgba(0, 0, 0, 0.54);
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
                 }
 
                 &:hover + .room-actions-container {
@@ -159,7 +179,6 @@
 
             .room-actions-container {
                 text-align: right;
-                padding-right: 40px;
 
                 .room-action-container {
                     cursor: pointer;
@@ -212,6 +231,14 @@
                     line-height: 28px;
                 }
 
+                .terminal-type,
+                .terminal-name,
+                .terminal-actions {
+                    display: inline-block;
+                    margin: 15px;
+                    vertical-align: middle;
+                }
+
                 .terminal-icon {
                     font-size: 28px;
                     color: rgba(0, 0, 0, 0.54);
@@ -220,6 +247,10 @@
                 .terminal-name {
                     font-size: 20px;
                     cursor: pointer;
+                    width: calc(100% - 260px);
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
                 }
 
                 .terminal-actions {
@@ -229,7 +260,6 @@
                         display: inline-block;
                         vertical-align: top;
                         width: 64px;
-                        text-align: left;
 
                         &,
                         & a {
@@ -354,4 +384,32 @@
 
 .confirm-button {
     color: #f44336;
+}
+
+@media only screen and (max-width: 480px) {
+    .room-list {
+        .room-item {
+            .room-header {
+                .room-icon-container {
+                    display: none;
+                }
+
+                .room-title-container {
+                    width: calc(100% - 196px);
+                }
+            }
+
+            .room-content {
+                .terminal-item {
+                    .terminal-name {
+                        width: calc(100% - 92px);
+                    }
+
+                    .terminal-actions {
+                        width: calc(100% - 30px);
+                    }
+                }
+            }
+        }
+    }
 }

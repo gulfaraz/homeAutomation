@@ -91,6 +91,7 @@ export class viewHome {
                 this.showMessage(data.message);
                 if(data.home) {
                     this.home = data.home;
+                    this.confirmDialog.close();
                 }
             });
     }
@@ -125,6 +126,7 @@ export class viewHome {
                 this.showMessage(data.message);
                 if(data.home) {
                     this.home = data.home;
+                    this.confirmDialog.close();
                 }
             });
     }
@@ -151,6 +153,7 @@ export class viewHome {
                 this.showMessage(data.message);
                 if(data.home) {
                     this.home = data.home;
+                    this.confirmDialog.close();
                 }
             });
     }

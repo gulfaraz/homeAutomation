@@ -51,11 +51,19 @@
                 cursor: pointer;
             }
 
+            .home-icon-container,
+            .home-title-container,
+            .home-actions-container {
+                display: inline-block;
+                margin: 15px;
+                vertical-align: middle;
+            }
+
             .home-icon {
                 font-size: 32px;
                 text-align: center;
-                line-height: 40px;
-                width: 40px;
+                line-height: 48px;
+                width: 48px;
                 border-radius: 50px;
                 color: rgba(0, 0, 0, 0.13);
             }
@@ -68,6 +76,8 @@
             }
 
             .home-title-container {
+                width: calc(100% - 194px);
+
                 .home-title {
                     font-size: 20px;
                 }
@@ -99,6 +109,22 @@
             width: 100%;
             text-decoration: none;
             color: inherit;
+        }
+    }
+}
+
+@media only screen and (max-width: 480px) {
+    .home-list {
+        .home-item-container {
+            .home-list-item {
+                .home-icon-container {
+                    display: none;
+                }
+
+                .home-title-container {
+                    width: calc(100% - 112px);
+                }
+            }
         }
     }
 }
