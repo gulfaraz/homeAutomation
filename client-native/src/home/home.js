@@ -26,7 +26,7 @@
                         dialog.showModal();
                     }
                 }, function (response) {
-                    scope.message = response.data.message;
+                    scope.message = response.data ? response.data.message : "Server Unavailable";
                     dialog.showModal();
                 });
             };
