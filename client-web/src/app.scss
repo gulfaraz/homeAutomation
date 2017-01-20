@@ -115,9 +115,18 @@ dialog[open] {
     }
 }
 
+div._dialog_overlay {
+    z-index: -1 !important;
+}
+
 @media only screen and (max-width: 480px) {
+    .mdl-snackbar {
+        bottom: 120px;
+    }
+
     .footer {
-        height: 160px;
+        height: 120px;
+        min-height: 120px;
 
         .mdl-mini-footer__left-section,
         .mdl-mini-footer__right-section {
