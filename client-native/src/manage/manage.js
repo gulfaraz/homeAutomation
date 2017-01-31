@@ -10,21 +10,21 @@
                     resolve: resolve
                 });
         }])
-        .controller("ManageCtrl", [ "$scope", "TerminalService", "NetworkService", "$timeout", "$state", function (scope, terminalService, networkService, timeout, state) {
+        .controller("ManageCtrl", [ "$scope", "TerminalService", "NetworkService", "ConfigurationService", "DeviceService", "$timeout", "$state", function (scope, terminalService, networkService, configurationService, deviceService, timeout, state) {
 
             scope.terminalList = terminalService.getTerminals();
 
-            scope.homeCredentials = networkService.getCredentials();
+            scope.homeCredentials = configurationService.getCredentials();
 
             scope.deviceIdList = [];
 
             scope.switchList = [];
 
-            terminalService.getDeviceConfiguration().then(function (response) {
+            deviceService.getDeviceConfiguration().then(function (response) {
                 scope.switchList.length = response.data.switchCount;
                 scope.deviceIdList = response.data.deviceIdList;
             }, function (response) {
-                state.go("device");
+                state.go("network");
             });
 
             scope.getTerminalProperty = function (property, deviceId) {
@@ -46,9 +46,9 @@
                 deviceIdList = deviceIdList.map(function (deviceId, deviceIdIndex) {
                     return (deviceId ? deviceId : "//");
                 });
-                terminalService.configureDevice(homeCredentials, deviceIdList).then(function (response) {
+                deviceService.configureDevice(homeCredentials, deviceIdList).then(function (response) {
                     console.log("Configuration Success");
-                    networkService.connect({ ssid: homeCredentials.ssid }, homeCredentials.password, function (error, credentials) {
+                    networkService.restore(homeCredentials, function (error, credentials) {
                         state.go("home");
                     });
                 }, function (response) {
@@ -57,7 +57,7 @@
             };
 
             scope.toggleSwitch = function (index) {
-                terminalService.testSwitch(index).then(function (response) {
+                deviceService.testSwitch(index).then(function (response) {
                     console.log("Switch is turned " + ((response.data.state === 1) ? "on" : "off"));
                 }, function (response) {
                     console.log("Unable to access switch");

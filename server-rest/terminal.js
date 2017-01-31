@@ -102,7 +102,7 @@ module.exports = function (Home, mqttServer) {
 
     function linkTerminal(homeId, roomId, terminalId, callback) {
         updateTerminal(homeId, roomId, terminalId, function (terminal) {
-            mqttServer.controlBroadcast(homeId, roomId, terminalId, "on");
+            mqttServer.controlBroadcast(homeId, roomId, terminalId, (terminal.state ? "on" : "off"));
             terminal.linked = true;
         }, callback);
     }

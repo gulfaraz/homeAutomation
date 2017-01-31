@@ -2,7 +2,7 @@
     <h4>Select Home Network</h4>
     <div class="home-network">
         <div class="back-button-container">
-            <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--mini-fab" ui-sref="home">
+            <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--mini-fab" ui-sref="device">
                 <i class="material-icons">chevron_left</i>
             </button>
         </div>
@@ -44,7 +44,7 @@
                         <i class="material-icons" ng-show="-70 > network.signal_level">signal_cellular_null</i>
                     </td>
                     <td class="network-connect-button-container mdl-data-table__cell--non-numeric">
-                        <button class="mdl-button mdl-js-button mdl-button--colored network-connect-button" ng-click="selectNetwork(network)">Select</button>
+                        <button class="mdl-button mdl-js-button mdl-button--colored network-connect-button" ng-click="openNetworkPasswordModal(network.ssid)">Select</button>
                     </td>
                 </tr>
                 <tr class="network-message" ng-hide="networks.length">
@@ -63,7 +63,7 @@
             <div class="network-password-dialog-message">{{connectMessage}}</div>
         </div>
         <div class="mdl-dialog__actions">
-            <button type="button" class="mdl-button" ng-click="selectNetwork(selectedNetwork, password)">Connect</button>
+            <button type="button" class="mdl-button" ng-click="testNetwork(password)">Connect</button>
             <button type="button" class="mdl-button close" ng-click="closeNetworkPasswordDialog()">Cancel</button>
         </div>
     </dialog>

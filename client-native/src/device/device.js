@@ -8,12 +8,12 @@
                     templateUrl: "device.html",
                     controller: "DeviceCtrl",
                     resolve: {
-                        "terminals" : resolve.terminals,
-                        "network" : resolve.network
+                        "terminals" : resolve.terminals
                     }
                 });
         }])
-        .controller("DeviceCtrl", [ "$scope", "NetworkService", "$timeout", "$state", function (scope, networkService, timeout, state) {
+        .controller("DeviceCtrl", [ "$scope", "NetworkService", "$timeout", "$state", "settings", function (scope, networkService, timeout, state, settings) {
+            var dialog = document.querySelector("#dialog");
 
             scope.scanMessage = "Scanning...";
 
@@ -23,7 +23,7 @@
                 }
                 scope.scanMessage = "Scanning...";
                 scope.scanning = true;
-                networkService.find(true, function (error, devices) {
+                networkService.find(function (error, devices) {
                     if(error) {
                         scope.scanMessage = error;
                         console.error(error);
@@ -41,31 +41,29 @@
                 });
                 scope.timeoutInstance = timeout(function () {
                     scope.scanDevices();
-                }, 3000);
+                }, settings.deviceScanInterval);
             };
 
             scope.scanDevices();
 
-            scope.connectDevice = function (network) {
-                scope.selectedDevice = network;
-                scope.connectMessage = null;
-                networkService.connect(network, "setupnewdevice", function (error, credentials) {
+            scope.connectDevice = function (deviceSSID) {
+                scope.selectedDevice = deviceSSID;
+                scope.message = null;
+                networkService.connect(deviceSSID, function (error, credentials) {
                     if(error) {
-                        if (error === "failed") {
-                            scope.connectMessage = "Failed to connect to " + (network.ssid || "device");
-                        } else {
-                            scope.connectMessage = "Unable to connect to device, hold the reset button and try again";
-                            console.error(error);
-                        }
-                        var homeCredentials = networkService.getCredentials();
-                        networkService.connect({ ssid: homeCredentials.ssid }, homeCredentials.password);
+                        scope.message = "Could not connect to device";
+                        console.error(error);
+                        dialog.showModal();
                     } else {
-                        timeout(function () {
-                            scope.connectMessage = null;
-                            state.go("manage");
-                        });
+                        scope.message = null;
+                        state.go("network");
                     }
                 });
+            };
+
+            scope.closeDialog = function () {
+                dialog.close();
+                scope.message = "";
             };
         }]);
 })();

@@ -2,7 +2,7 @@
     <h4>Connect Device</h4>
     <div class="selected-device">
         <div class="back-button-container">
-            <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--mini-fab" ui-sref="network">
+            <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--mini-fab" ui-sref="home">
                 <i class="material-icons">chevron_left</i>
             </button>
         </div>
@@ -29,7 +29,7 @@
                 <tr class="network" ng-repeat="network in devices | orderBy: 'ssid'" ng-show="devices.length">
                     <td class="network-name mdl-data-table__cell--non-numeric">{{network.ssid}}</td>
                     <td class="network-connect-button-container mdl-data-table__cell--non-numeric">
-                        <button type="button" class="mdl-button mdl-js-button mdl-button--colored network-connect-button" ng-click="connectDevice(network)">Select</button>
+                        <button type="button" class="mdl-button mdl-js-button mdl-button--colored network-connect-button" ng-click="connectDevice(network.ssid)">Select</button>
                     </td>
                 </tr>
                 <tr class="network-message" ng-hide="devices.length">
@@ -38,4 +38,13 @@
             </tbody>
         </table>
     </div>
+    <dialog class="mdl-dialog" id="dialog">
+        <h4 class="mdl-dialog__title">Error</h4>
+        <div class="mdl-dialog__content">
+            <p>{{message}}</p>
+        </div>
+        <div class="mdl-dialog__actions">
+            <button type="button" class="mdl-button close" ng-click="closeDialog()">Close</button>
+        </div>
+    </dialog>
 </div>
