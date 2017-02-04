@@ -48,6 +48,10 @@
                 }, settings.networkScanInterval);
             };
 
+            scope.$on("$destroy", function () {
+                timeout.cancel(scope.timeoutInstance);
+            });
+
             scope.scanNetworks();
 
             scope.openNetworkPasswordModal = function (networkSSID) {
