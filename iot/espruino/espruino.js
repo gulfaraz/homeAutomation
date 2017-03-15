@@ -41,14 +41,14 @@ var configuration = (function (switchCount, flash) {
     var configuration = {};
 
     configuration.client = {
-        ssid: "newDevice-" + wifi.getAPIP().mac.split(":").join(""),
+        ssid: "HomeConnect-" + wifi.getAPIP().mac.split(":").join(""),
         password: "setupnewdevice"
     };
 
     configuration.home = loadHomeCredentials();
 
     configuration.mqtt = {
-        host: "10.244.220.86",
+        host: "raidms.com",
         port: 1883,
         keepAlive: 60
     };
@@ -80,13 +80,14 @@ var configuration = (function (switchCount, flash) {
         pressTimeout = 2,
         resetTimeout = 5000,
         subscribeTimeout = 500,
-        firmwareMaxLength = 3000;
+        firmwareMaxLength = 3000,
+        networkTimeout = 30000;
 
     function restartDevice() {
         setTimeout(require("ESP8266").reboot, resetTimeout);
     }
 
-    setWatch(function(e) {
+    setWatch(function (e) {
         console.log(timer);
         if((e.time - lastPress) < pressTimeout) {
             timer += e.time - e.lastTime;
@@ -103,20 +104,15 @@ var configuration = (function (switchCount, flash) {
     }, 0, { "repeat" : true, "edge" : "both", "debounce" : 10 });
 
     function startNetwork(functionName, credentials, callback) {
-        wifi.stopAP();
         console.log(credentials);
-        wifi[functionName](credentials.ssid, { "password" : credentials.password }, function (error) {
-            if(!error) {
-                initializeSwitches();
-                callback();
-            }
-        });
+        wifi[functionName](credentials.ssid, { "password" : credentials.password }, callback);
     }
 
     function webServer(request, response) {
+        var data = "",
+            params = url.parse(request.url, true);
         if(request.method === "POST") {
-            var data = "";
-            request.on("data", function(chunk) {
+            request.on("data", function (chunk) {
                 if(chunk) {
                   data += chunk;
                 }
@@ -128,9 +124,36 @@ var configuration = (function (switchCount, flash) {
                     restartDevice();
                 }
             });
+        } else if(request.method === "PUT") {
+            request.on("data", function (chunk) {
+                if(chunk) {
+                  data += chunk;
+                }
+                if(data.length == Number(request.headers["Content-Length"])) {
+                    if (params.query && "s" in params.query) {
+                        wifi.scan(function (networkList) {
+                            response.writeHead(200);
+                            response.end(JSON.stringify(networkList));
+                        });
+                    } else {
+                        data = JSON.parse(data);
+                        setTimeout(function () {
+                            if(!response.close) {
+                                response.writeHead(500);
+                                response.end("Failed to connect to network");
+                            }
+                        }, networkTimeout);
+                        startNetwork("connect", data, function (error) {
+                            if(!error) {
+                                response.writeHead(200);
+                                response.end("Connected to network");
+                            }
+                        });
+                    }
+                }
+            });
         } else {
             response.writeHead(200);
-            var params = url.parse(request.url, true);
             if (params.query && "i" in params.query) {
                 var switchNumber = switchList[params.query.i];
                 digitalWrite(switchNumber, (!digitalRead(switchNumber) ? 1 : 0));
@@ -141,14 +164,19 @@ var configuration = (function (switchCount, flash) {
         }
     }
 
-    function startWebServer() {
-        http.createServer(webServer).listen(80);
-    }
-
     function initializeSwitches() {
         for(var switchIndex in switchList) {
             pinMode(switchList[switchIndex], "output");
             digitalWrite(switchList[switchIndex], 0);
+        }
+    }
+
+    function startWebServer(error) {
+        if(error) {
+            restartDevice();
+        } else {
+            initializeSwitches();
+            http.createServer(webServer).listen(80);
         }
     }
 
@@ -220,24 +248,31 @@ var configuration = (function (switchCount, flash) {
         connectToMQTTServer(configuration.mqtt, configuration.deviceIdList);
     }
 
-    function fetchFirmware() {
-        http.get("http://" + configuration.mqtt.host + ":8080/device/firmware", function (response) {
-            var data = "";
-            response.on("data", function (chunk) {
-                if(data.length < firmwareMaxLength) {
-                    data += chunk;
-                }
+    function fetchFirmware(error) {
+        if(error) {
+            startNetwork("startAP", configuration.client, startWebServer);
+        } else {
+            initializeSwitches();
+            http.get("http://" + configuration.mqtt.host + ":8080/device/firmware", function (response) {
+                var data = "";
+                response.on("data", function (chunk) {
+                    if(data.length < firmwareMaxLength) {
+                        data += chunk;
+                    }
+                });
+                response.on("close", function () {
+                    data = JSON.parse(data);
+                    try {
+                        eval(data.firmware); // jshint ignore:line
+                    } catch (e) {
+                        setupMQTTClient();
+                    }
+                });
             });
-            response.on("close", function () {
-                data = JSON.parse(data);
-                try {
-                    eval(data.firmware); // jshint ignore:line
-                } catch (e) {
-                    setupMQTTClient();
-                }
-            });
-        });
+        }
     }
+
+    wifi.stopAP();
 
     var mode = "startAP",
         credentials = configuration.client,

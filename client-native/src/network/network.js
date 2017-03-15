@@ -8,15 +8,16 @@
                     templateUrl: "network.html",
                     controller: "NetworkCtrl",
                     resolve: {
-                        "terminals" : resolve.terminals
+                        "terminals" : resolve.terminals,
+                        "device" : resolve.device
                     }
                 });
         }])
-        .controller("NetworkCtrl", [ "$scope", "NetworkService", "$timeout", "$state", function (scope, networkService, timeout, state) {
+        .controller("NetworkCtrl", [ "$scope", "DeviceService", "ConfigurationService", "$timeout", "$state", "settings", function (scope, deviceService, configurationService, timeout, state, settings) {
 
             scope.scanMessage = "Scanning...";
 
-            scope.credentials = networkService.getCredentials();
+            scope.credentials = configurationService.getCredentials();
 
             var networkPasswordDialog = document.querySelector("#networkPasswordDialog");
 
@@ -30,48 +31,44 @@
                 }
                 scope.scanMessage = "Scanning...";
                 scope.scanning = true;
-                networkService.find(false, function (error, networks) {
-                    if(error) {
-                        scope.scanMessage = error;
-                        console.error(error);
+                deviceService.scanNetworks().then(function (response) {
+                    scope.scanning = false;
+                    scope.networks = response.data;
+                    if(scope.networks.length > 0) {
+                        scope.scanMessage = scope.networks.length + " Network" + (scope.networks.length > 1 ? "s" : "") + " Found";
+                    } else {
+                        scope.scanMessage = "No Networks Found";
                     }
-                    timeout(function () {
-                        scope.scanning = false;
-                        scope.networks = networks;
-                        if(scope.networks.length > 0) {
-                            scope.scanMessage = scope.networks.length + " Network" + (scope.networks.length > 1 ? "s" : "") + " Found";
-                        } else {
-                            scope.scanMessage = "No Networks Found";
-                        }
-                    });
+                }, function (reject) {
+                    scope.scanMessage = "Failed to scan networks";
+                    console.error(reject);
                 });
                 scope.timeoutInstance = timeout(function () {
                     scope.scanNetworks();
-                }, 3000);
+                }, settings.networkScanInterval);
             };
+
+            scope.$on("$destroy", function () {
+                timeout.cancel(scope.timeoutInstance);
+            });
 
             scope.scanNetworks();
 
-            scope.selectNetwork = function (network, password) {
-                scope.selectedNetwork = network;
+            scope.openNetworkPasswordModal = function (networkSSID) {
+                scope.selectedNetwork = networkSSID;
                 scope.connectMessage = null;
-                networkService.connect(network, password, function (error, credentials) {
-                    if(error) {
-                        if(error === "password") {
-                            networkPasswordDialog.showModal();
-                        } else if (error === "failed") {
-                            scope.connectMessage = "Failed to connect to " + (network.ssid || "network");
-                        } else {
-                            scope.connectMessage = "Unable to connect to network, verify password";
-                            console.error(error);
-                        }
-                    } else {
-                        timeout(function () {
-                            scope.connectMessage = null;
-                            scope.credentials = credentials;
-                            state.go("device");
-                        });
-                    }
+                networkPasswordDialog.showModal();
+            };
+
+            scope.testNetwork = function (password) {
+                var credentials = { ssid : scope.selectedNetwork, password : password };
+                deviceService.testNetwork(credentials).then(function (response) {
+                    scope.connectMessage = null;
+                    scope.credentials = configurationService.setCredentials(credentials);
+                    state.go("manage");
+                }, function (reject) {
+                    scope.connectMessage = "Unable to connect to network, verify password";
+                    console.error(reject);
                 });
             };
 

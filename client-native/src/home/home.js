@@ -20,7 +20,7 @@
                 terminalService.fetchTerminals(credentials).then(function (response) {
                     if(response.data.terminals.length) {
                         terminalService.setTerminals(response.data.terminals);
-                        state.go("network");
+                        state.go("device");
                     } else {
                         scope.message = "No Terminals Available";
                         dialog.showModal();
